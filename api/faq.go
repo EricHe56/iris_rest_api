@@ -4,8 +4,8 @@ import (
 	//"encoding/json"
 	//"math/rand"
 	"gopkg.in/mgo.v2/bson"
-	. "iris_template/init"
-	. "iris_template/models"
+	. "iris_rest_api/init"
+	. "iris_rest_api/models"
 	"net/http"
 	"time"
 )
@@ -29,11 +29,9 @@ func (x FaqApi) Faq_Insert(req Faq) (code int, data struct {
 	if e != nil {
 		Info.Println(e)
 		code = 50300
-		return
 	} else {
 		code = 0
 		data.ID = req.ID
-		return
 	}
 	return
 }
@@ -47,10 +45,8 @@ func (x FaqApi) Faq_Replace(req Faq) (code int, data struct{}, e error) {
 	if e != nil {
 		Info.Println(e)
 		code = 50300
-		return
 	} else {
 		code = 0
-		return
 	}
 	return
 }
@@ -72,10 +68,8 @@ func (x FaqApi) Faq_Page(req PageData) (code int, data struct {
 	if e != nil {
 		Info.Println(e)
 		code = 50300
-		return
 	} else {
 		code = 0
-		return
 	}
 	return
 }
@@ -85,7 +79,7 @@ func (x FaqApi) Faq_Delete(req struct {
 }) (code int, data struct{}, e error) {
 	session := CloneSession()
 	defer session.Close()
-	session.DB(DB).C(C_FAQ).RemoveAll(bson.M{"_id": bson.M{"$in": req.ID}})
+	_, e = session.DB(DB).C(C_FAQ).RemoveAll(bson.M{"_id": bson.M{"$in": req.ID}})
 	code = 0
 	return
 }
@@ -98,7 +92,7 @@ func (x FaqApi) Faq_Get(req struct {
 }, e error) {
 	session := CloneSession()
 	defer session.Close()
-	session.DB(DB).C(C_FAQ).Find(bson.M{"_id": bson.M{"$in": req.ID}}).All(&data.List)
+	e = session.DB(DB).C(C_FAQ).Find(bson.M{"_id": bson.M{"$in": req.ID}}).All(&data.List)
 	data.Size = len(data.List)
 	code = 0
 	return

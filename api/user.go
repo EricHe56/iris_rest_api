@@ -1,7 +1,7 @@
 package api
 
 import (
-	"iris_template/models"
+	"iris_rest_api/models"
 	"net/http"
 )
 

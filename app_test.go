@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/gavv/httpexpect"
 	"github.com/kataras/iris/v12/httptest"
-	. "iris_template/init"
-	"iris_template/models"
+	. "iris_rest_api/init"
+	"iris_rest_api/models"
 	"testing"
 )
 

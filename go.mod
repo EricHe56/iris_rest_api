@@ -1,4 +1,4 @@
-module iris_template
+module iris_rest_api
 
 go 1.13
 

@@ -1,4 +1,4 @@
-iris_template
+iris_rest_api
 
 This project is developed on the basis of the iris framework for rapid development of restful interfaces.
 Complete development in two steps:

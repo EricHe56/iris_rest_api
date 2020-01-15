@@ -4,7 +4,7 @@ package routes_code_creator
 
 import (
 	"fmt"
-	"iris_template/utils"
+	"iris_rest_api/utils"
 	"os"
 	"reflect"
 	"regexp"
@@ -25,9 +25,9 @@ import (
 	"encoding/json"
 	"github.com/kataras/iris/v12"
 	"gopkg.in/mgo.v2/bson"
-	"iris_template/api"
-	. "iris_template/init"
-	"iris_template/models"
+	"iris_rest_api/api"
+	. "iris_rest_api/init"
+	"iris_rest_api/models"
 )
 
 func loadRouteHandlers() {

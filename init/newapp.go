@@ -11,7 +11,7 @@ import (
 	"github.com/kataras/iris/v12/middleware/recover"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/natefinch/lumberjack.v2"
-	"iris_template/irisyaag"
+	"iris_rest_api/irisyaag"
 	"log"
 	"os"
 	"time"

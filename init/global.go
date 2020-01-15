@@ -7,7 +7,7 @@ import (
 	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 	"gopkg.in/mgo.v2"
-	_ "iris_template/utils"
+	_ "iris_rest_api/utils"
 	"log"
 	"math/rand"
 	_ "reflect"
@@ -16,28 +16,8 @@ import (
 )
 
 const (
-	DB                = "wulong_guide"
-	C_SCENIC          = "scenic"
-	C_AUDIO           = "audio"
-	C_VIDEO           = "video"
-	C_PANORAMA        = "panorama"
-	C_MISSION         = "mission"
-	C_QUIZ            = "quiz"
-	C_ROUTEPLAN       = "routeplan"
-	C_PUBLICSERVICE   = "publicservice"
-	C_RECOMMEND       = "recommend"
-	C_RECOMMEND_SHOPS = "recommend_shops"
-	C_USERMISSION     = "user_mission"
-	C_EMERGENCYINFO   = "emergency_info"
-	C_ADMIN           = "admin"
-	C_USERINFO        = "userinfo"
-	C_FAQ             = "faq"
-	C_AWARD           = "award"
-	C_SYSTEMSETTINGS  = "systemsettings"
-	REDIS_WX_TOKEN    = "guide_wx_token"
-	REDIS_WX_TICKET   = "guide_wx_ticket"
-	REDIS_CREDENTIALS = "guide_web_upload_file_credentials"
-	ENV               = "dev"
+	DB    = "test"
+	C_FAQ = "faq"
 )
 
 var GlobalCodeDescription = map[int]string{

@@ -1,4 +1,4 @@
-iris_template
+iris_rest_api
 
 本项目在iris框架基础上开发完成，用于快速开发restful接口。
 两步完成开发：
