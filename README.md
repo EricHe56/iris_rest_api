@@ -1,5 +1,7 @@
 iris_rest_api
 
+English | [简体中文](./README-zh.md)
+
 This project is developed on the basis of the iris framework for rapid development of restful interfaces.
 Complete development in two steps:
 1. Add functions directly in the api directory following user and faq
