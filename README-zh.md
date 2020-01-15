@@ -17,8 +17,8 @@
         -  go run -tags=create_router app.go apiRoutes.go
     -  (2). 运行命令生成可执行文件：
         -  go build app.go apiRoutes.go
-    -  或直接运行测试环境（加dev参数运行，无参数运行会读取conf/prod.conf请自行配置生产环境值）
-        -  go run  app.go apiRoutes.go dev
+        -  或直接运行测试环境（加dev参数运行，无参数运行会读取conf/prod.conf请自行配置生产环境值）
+            -  go run  app.go apiRoutes.go dev
 
 ### 说明：
 1. 配置文件在conf目录中： 端口、跨域、mongo、redis等
