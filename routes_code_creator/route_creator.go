@@ -71,7 +71,7 @@ func customizeFunction(apiFuncTemplateCode string, apiRouteInfo ApiRouteInfo) {
 	funcCode = strings.ReplaceAll(funcCode, "{{routeFunctionName}}", routeFunctionName)
 	ApiFuncRoutesCode += funcCode
 
-	var routePath = getRoutePath(routeFunctionName)
+	var routePath = getRoutePath(apiRouteInfo.ApiFunction)
 	var routeHandeler = "	App.Handle(\"ANY\", \"/" + routePath + "\", " + routeFunctionName + ")\n"
 	RouterHandlerList += routeHandeler
 	return

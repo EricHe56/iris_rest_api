@@ -13,7 +13,7 @@ iris_rest_api
 3. 在api目录中仿照user.go和faq.go创建自己的api代码
 4. 在app.go中添加你需要暴露的接口类，如： api.UserApi{}, api.FaqApi{},
 5. 脚本生成build.bat或者单步生成：
-    (1). 运行命令生成api的路由代码：
+    (1). 运行命令生成api的路由代码(接口路径会显示在控制台)：
     go run -tags=create_router app.go apiRoutes.go
     (2). 运行命令生成可执行文件：
     go build app.go apiRoutes.go
