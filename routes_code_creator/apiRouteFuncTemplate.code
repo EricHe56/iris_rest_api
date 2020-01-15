@@ -1,0 +1,31 @@
+//////////////////////////////////////////////////////////////////////////////////////////
+func {{routeFunctionName}}(ctx iris.Context) {
+	var bodyR = ResponseBody{
+		Code:    -1,
+		Message: "error",
+		Data:    "",
+	}
+
+	var apiX = {{apiType}}{
+		R:               ctx.Request(),
+		W:               ctx.ResponseWriter(),
+		CodeDescription: GlobalCodeDescription,
+	}
+
+	var req {{reqType}}
+	body := ctx.Values().GetString("body")
+	err := json.Unmarshal([]byte(body), &req)
+	if err != nil {
+		bodyR.Data = err.Error()
+		StdPrint.Error(err.Error())
+	} else {
+		bodyR.Code, bodyR.Data, err = {{apiType}}.{{apiFunction}}(apiX, req)
+		bodyR.Message = apiX.CodeDescription[bodyR.Code]
+		if err != nil {
+			bodyR.Data = err.Error()
+			StdPrint.Error(err.Error())
+		}
+	}
+	_, _ = ctx.JSON(bodyR, JsonOptions)
+	return
+}
