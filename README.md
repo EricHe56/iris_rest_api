@@ -1,4 +1,4 @@
-#iris_rest_api
+# iris_rest_api
 
 English | [简体中文](./README-zh.md)
 
@@ -9,7 +9,7 @@ Complete development in two steps:
 The system will automatically generate router code through conditional compilation, and developers can focus only on developing business logic.
 
 
-###Specific steps:
+### Specific steps:
 1. Clone project
 2. Modify the apiRoutes.go.template in the project directory to apiRoutes.go (the following steps will automatically generate the code inside)
 3. Create your own api code in the api directory by following user.go and faq.go
@@ -22,7 +22,7 @@ The system will automatically generate router code through conditional compilati
    -  Or run the dev environment directly (add dev parameters to run, run without parameters will read conf / prod.conf, please configure the production environment value yourself)
         -  go run  app.go apiRoutes.go dev
 
-###Explanation:
+### Explanation:
 1. The configuration file is in the conf directory: port, cross domain, mongo, redis, etc.
 2. Database-related structures can be placed in model / db_struct.go, and structures used only for interfaces are placed in model / api_struct
 3. Unit tests can be written in app_test.go (with examples) and run: go test -count = 1
