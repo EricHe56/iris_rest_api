@@ -57,12 +57,16 @@ func NewApp() *iris.Application {
 		iniFile = "conf/prod.conf"
 	}
 
+	if len(os.Args) > 2 && os.Args[2] == "doc" || DevMode { // 给test留入口
+		BuildApiDoc = true
+	}
+
 	if DevMode && BuildApiDoc { // 仅在dev模式生成文档
 		yaag.Init(&yaag.Config{ // <- IMPORTANT, init the middleware.
 			On:       true,
-			DocTitle: "Iris_Template_Api",
+			DocTitle: "Iris_Rest_Api",
 			DocPath:  "apiDoc.html",
-			BaseUrls: map[string]string{"Production": "My Api", "Staging": "abc"},
+			BaseUrls: map[string]string{"Production": API_DOC_TITLE, "Staging": time.Now().Format("2006-01-02T15:04:05.000Z07:00"), "Your Info": "Here"},
 		})
 		App.Use(irisyaag.New())
 	}
@@ -81,7 +85,7 @@ func NewApp() *iris.Application {
 		MaxAge:     maxAge,
 	}
 	Info = log.New(logFile, "[debug]", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
-	Info.Println("guide service starting...")
+	Info.Println("app service starting...")
 
 	// Redis 连接池
 	RedisClient = &redis.Pool{

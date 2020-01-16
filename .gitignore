@@ -27,3 +27,4 @@ _testmain.go
 /apiDoc.html.json
 /apiRoutes.go
 /routes_code_creator/apiRoutes.go
+/_apiDoc.html

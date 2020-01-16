@@ -166,6 +166,7 @@ func getModlesType() {
 			typeName := typ.String()
 			if strings.Contains(typeName, "*models.") {
 				j += 1
+				apiDoc_Categories += "\tX." + strconv.Itoa(j) + ". " + typ.Elem().String() + "\n"
 				apiDocStructAll += "\tX." + strconv.Itoa(j) + ". " + typ.Elem().String() + "\n"
 				fmt.Println(typ.Elem().String())
 				//fmt.Printf("%v", typ.Elem().Kind())
@@ -198,6 +199,7 @@ func create_doc() {
 			apiDoc_Content += "\t\t\t\t\t" + apiInfoGroups[i].ApiList[j].RtnDataType + "\n"
 		}
 	}
+	apiDoc_Categories += "X. 附录：\n"
 	getModlesType()
 	apiDoc_All += apiDoc_Categories + "\n\n" + apiDoc_Content + "\n\n" + apiDocStructAll
 	_ = os.Remove(API_DOC_NAME)
