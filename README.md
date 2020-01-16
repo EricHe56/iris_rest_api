@@ -23,10 +23,10 @@ The system will automatically generate router code through conditional compilati
             - go run  app.go apiRoutes.go dev
 
 ### Explanation:
-1. The configuration file is in the conf directory: port, cross domain, mongo, redis, etc.
-2. Database-related structures can be placed in model / db_struct.go, and structures used only for interfaces are placed in model / api_struct
-3. Unit tests can be written in app_test.go (with examples) and run: go test -count = 1
-4. Support yaag document generation, replace BuildApiDoc in init / global.go with true before running tests, and then run the program (you need to add dev parameters to generate, in order to prevent the production environment from being executed)
-The generated files are apiDoc.html and apiDoc.html.json. Will include the interfaces accessed during the test and send and receive data.
+1. Automatically create the interface document in _apiDoc.html (generated during the build process)
+2. The configuration file is in the conf directory: port, cross domain, mongo, redis, etc.
+3. Database-related structures can be placed in model / db_struct.go, and structures used only for interfaces are placed in model / api_struct
+4. Unit tests can be written in app_test.go (with examples) and run: go test -count = 1
+5. At the same time support yaag document generation, before running test, change BuildApiDoc in init / global.go to true, and then run the program (you need to add dev parameters to generate, in order to prevent the production environment from being executed)
+   - The generated files are apiDoc.html and apiDoc.html.json. It will contain the interfaces accessed during the test and send and receive data.
 
-The function of generating interface documentation will be added later when creating routing code.

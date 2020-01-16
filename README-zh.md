@@ -21,10 +21,10 @@
             -  go run  app.go apiRoutes.go dev
 
 ### 说明：
-1. 配置文件在conf目录中： 端口、跨域、mongo、redis等
-2. 可以将数据库相关的结构放在models/db_struct.go中，仅用于接口的结构放在models/api_struct中
-3. 单元测试可以写在app_test.go中（有范例）运行： go test -count=1 即可
-4. 支持yaag文档生成，在运行test前将init/global.go中的BuildApiDoc改为true，然后运行程序（需要添加dev参数才会生成，为防止生产环境被执行）
-生成的文件是apiDoc.html和apiDoc.html.json.会包含测试中访问的接口和收发数据。
+1. 自动创建接口文档在_apiDoc.html中（build过程中生成）
+2. 配置文件在conf目录中： 端口、跨域、mongo、redis等
+3. 可以将数据库相关的结构放在models/db_struct.go中，仅用于接口的结构放在models/api_struct中
+4. 单元测试可以写在app_test.go中（有范例）运行： go test -count=1 即可
+5. 同时支持yaag方式文档生成，在运行test前将init/global.go中的BuildApiDoc改为true，然后运行程序（需要添加dev参数才会生成，为防止生产环境被执行）
+   - 生成的文件是apiDoc.html和apiDoc.html.json.会包含测试中访问的接口和收发数据。
 
-后续会在创建路由代码的时候添加生成接口文档的功能。

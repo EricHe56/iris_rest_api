@@ -4,21 +4,32 @@ package routes_code_creator
 
 import (
 	"fmt"
+	"iris_rest_api/models"
 	"iris_rest_api/utils"
 	"os"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
+	"unsafe"
 )
 
 type ApiRouteInfo struct {
 	ApiType     string // api类型 如： api.UserApi
 	ApiFunction string // api函数名称
 	ReqType     string // api函数body请求参数结构类型，对应函数的req声明
+	RtnDataType string // api函数返回data参数结构类型，对应函数返回的data声明
+	RoutePath   string // api函数路径
+}
+
+type ApiInfoGroup struct {
+	ApiType string
+	ApiList []ApiRouteInfo
 }
 
 const TEMPLATE_FILE_NAME = "./routes_code_creator/apiRouteFuncTemplate.code"
 const API_ROUTES_NAME = "./apiRoutes.go"
+const API_DOC_NAME = "./_apiDoc.html"
 
 var apiRoutesHeader = `package main
 import (
@@ -38,6 +49,11 @@ func loadRouteHandlers() {
 var ApiFuncTemplateCode = ""
 var ApiFuncRoutesCode = apiRoutesHeader
 var RouterHandlerList = ""
+var apiDoc_All = "Api接口文档\n"
+var apiDoc_Categories = "目录：\n"
+var apiDoc_Content = ""
+var apiInfoGroups []ApiInfoGroup = make([]ApiInfoGroup, 0)
+var apiDocStructAll = "X.公共数据结构\n"
 
 func getRoutePath(routeFunctionName string) (routePath string) {
 	strA := strings.Split(routeFunctionName, "")
@@ -62,6 +78,14 @@ func getReqType(methodType string) (reqType string) {
 	return
 }
 
+func getRtnDataType(methodType string) (rtnDataType string) {
+	regexp1, _ := regexp.Compile("func\\([\\w\\W]+\\) \\(int, ")
+	var str1 = regexp1.ReplaceAllString(methodType, "")
+	regexp2, _ := regexp.Compile(", error\\)$")
+	rtnDataType = regexp2.ReplaceAllString(str1, "")
+	return
+}
+
 func customizeFunction(apiFuncTemplateCode string, apiRouteInfo ApiRouteInfo) {
 	var funcCode = apiFuncTemplateCode
 	var routeFunctionName = strings.ReplaceAll(apiRouteInfo.ApiType, "api.", "") + "_" + apiRouteInfo.ApiFunction
@@ -71,33 +95,45 @@ func customizeFunction(apiFuncTemplateCode string, apiRouteInfo ApiRouteInfo) {
 	funcCode = strings.ReplaceAll(funcCode, "{{routeFunctionName}}", routeFunctionName)
 	ApiFuncRoutesCode += funcCode
 
-	var routePath = getRoutePath(apiRouteInfo.ApiFunction)
-	var routeHandeler = "	App.Handle(\"ANY\", \"/" + routePath + "\", " + routeFunctionName + ")\n"
+	var routeHandeler = "	App.Handle(\"ANY\", \"/" + apiRouteInfo.RoutePath + "\", " + routeFunctionName + ")\n"
 	RouterHandlerList += routeHandeler
 	return
 }
 
-func registerApi(x interface{}) {
-	var apiRouteInfo = ApiRouteInfo{
-		ApiType:     "",
-		ApiFunction: "",
-		ReqType:     "",
+func registerApi(x interface{}) (apiInfoGroup ApiInfoGroup) {
+	apiInfoGroup = ApiInfoGroup{
+		ApiType: "",
+		ApiList: make([]ApiRouteInfo, 0),
 	}
 
 	v := reflect.ValueOf(x)
 	t := v.Type()
-	apiRouteInfo.ApiType = t.String()
+	apiInfoGroup.ApiType = t.String()
+
 	fmt.Printf("apiType: %s\n", t)
 
 	for i := 0; i < v.NumMethod(); i++ {
+		var apiRouteInfo = ApiRouteInfo{
+			ApiType:     "",
+			ApiFunction: "",
+			ReqType:     "",
+			RtnDataType: "",
+			RoutePath:   "",
+		}
 		methType := v.Method(i).Type()
+		apiRouteInfo.ApiType = t.String()
 		apiRouteInfo.ApiFunction = t.Method(i).Name
 		apiRouteInfo.ReqType = getReqType(methType.String())
+		apiRouteInfo.RtnDataType = getRtnDataType(methType.String())
+		var pathGroupName = strings.ReplaceAll(apiRouteInfo.ApiType, "api.", "")
+		pathGroupName = strings.ReplaceAll(pathGroupName, "Api", "")
+		apiRouteInfo.RoutePath = getRoutePath(pathGroupName + "_" + apiRouteInfo.ApiFunction)
 		customizeFunction(ApiFuncTemplateCode, apiRouteInfo)
-
+		apiInfoGroup.ApiList = append(apiInfoGroup.ApiList, apiRouteInfo)
 		fmt.Printf("func (%s) %s%s\n", t.Name(), t.Method(i).Name,
 			strings.TrimPrefix(methType.String(), "func"))
 	}
+	return
 }
 
 func CreateApiRoutesCode(apiInterfaces ...interface{}) bool {
@@ -105,7 +141,8 @@ func CreateApiRoutesCode(apiInterfaces ...interface{}) bool {
 	ApiFuncTemplateCode = apiFuncTemplateCode
 	if err == nil {
 		for i, _ := range apiInterfaces {
-			registerApi(apiInterfaces[i])
+			var apiInfoGroup = registerApi(apiInterfaces[i])
+			apiInfoGroups = append(apiInfoGroups, apiInfoGroup)
 		}
 		err = os.Remove(API_ROUTES_NAME)
 		ApiFuncRoutesCode = strings.ReplaceAll(ApiFuncRoutesCode, "{{routeHandlers}}", RouterHandlerList)
@@ -114,5 +151,59 @@ func CreateApiRoutesCode(apiInterfaces ...interface{}) bool {
 			fmt.Printf("%s", err.Error())
 		}
 	}
+	create_doc()
 	return true
+}
+
+func getModlesType() {
+	var j = 0
+	sections, offsets := models.Typelinks()
+	for i, base := range sections {
+		for _, offset := range offsets[i] {
+			typeAddr := models.Add(base, uintptr(offset), "")
+			typ := reflect.TypeOf(*(*interface{})(unsafe.Pointer(&typeAddr)))
+			//fmt.Println(typ.String())
+			typeName := typ.String()
+			if strings.Contains(typeName, "*models.") {
+				j += 1
+				apiDocStructAll += "\tX." + strconv.Itoa(j) + ". " + typ.Elem().String() + "\n"
+				fmt.Println(typ.Elem().String())
+				//fmt.Printf("%v", typ.Elem().Kind())
+				s := typ.Elem()
+				//v := reflect.New(typ)
+				for i := 0; i < s.NumField(); i++ { // s must struct
+					fieldType := s.Field(i)
+					apiDocStructAll += "\t\t" + fieldType.Tag.Get("json") + "\t\t" + fieldType.Type.String() + "\t\t" + fieldType.Tag.Get("q") + "\n"
+				}
+			}
+		}
+	}
+}
+
+func create_doc() {
+	for i, _ := range apiInfoGroups {
+		apiDoc_Categories += strconv.Itoa(i+1) + ". " + apiInfoGroups[i].ApiType + "\n"
+		apiDoc_Content += strconv.Itoa(i+1) + ". " + apiInfoGroups[i].ApiType + "\n"
+		for j, _ := range apiInfoGroups[i].ApiList {
+			apiDoc_Categories += "\t" + strconv.Itoa(i+1) + "." + strconv.Itoa(j+1) + ". " + apiInfoGroups[i].ApiList[j].ApiFunction + "\n"
+			apiDoc_Content += "\t\t" + strconv.Itoa(i+1) + "." + strconv.Itoa(j+1) + ". " + apiInfoGroups[i].ApiList[j].ApiFunction + "\n"
+			apiDoc_Content += "\t\t\t" + "路径： \n"
+			apiDoc_Content += "\t\t\t\t/" + apiInfoGroups[i].ApiList[j].RoutePath + "\n"
+			apiDoc_Content += "\t\t\t" + "Post请求body： \n"
+			apiDoc_Content += "\t\t\t\t" + apiInfoGroups[i].ApiList[j].ReqType + "\n"
+			apiDoc_Content += "\t\t\t" + "返回信息： \n"
+			apiDoc_Content += "\t\t\t\t" + "code： int 返回错误代码，0为操作成功\n"
+			apiDoc_Content += "\t\t\t\t" + "message： string 返回代码对应的提示信息\n"
+			apiDoc_Content += "\t\t\t\t" + "data： \n"
+			apiDoc_Content += "\t\t\t\t\t" + apiInfoGroups[i].ApiList[j].RtnDataType + "\n"
+		}
+	}
+	getModlesType()
+	apiDoc_All += apiDoc_Categories + "\n\n" + apiDoc_Content + "\n\n" + apiDocStructAll
+	_ = os.Remove(API_DOC_NAME)
+	err := utils.WriteFile(API_DOC_NAME, apiDoc_All)
+	if err != nil {
+		fmt.Printf("%s", err.Error())
+	}
+	return
 }
