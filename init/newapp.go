@@ -53,6 +53,7 @@ func NewApp() *iris.Application {
 	iniFile := "conf/dev.conf"
 	if len(os.Args) > 1 && os.Args[1] == "dev" || DevMode { // 给test留入口
 		DevMode = true
+		App.HandleDir("/_doc", "./doc")
 	} else {
 		iniFile = "conf/prod.conf"
 	}
