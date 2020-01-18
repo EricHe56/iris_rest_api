@@ -3,6 +3,7 @@
 package routes_code_creator
 
 import (
+	"encoding/json"
 	"fmt"
 	"iris_rest_api/models"
 	"iris_rest_api/utils"
@@ -11,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	"unsafe"
 )
 
@@ -27,11 +29,34 @@ type ApiInfoGroup struct {
 	ApiList []ApiRouteInfo
 }
 
+type JsonFieldInfo struct {
+	Name        string
+	Type        string
+	Required    bool
+	Description string
+}
+
+type StructInfo struct {
+	StructName string
+	Fields     []JsonFieldInfo
+}
+
+type ApiDocInfo struct {
+	ApiDocTitle   string
+	Time          string
+	ApiInfoGroups []ApiInfoGroup
+	StructInfos   []StructInfo
+}
+
 const TEMPLATE_FILE_NAME = "./routes_code_creator/apiRouteFuncTemplate.code"
 const API_ROUTES_NAME = "./apiRoutes.go"
-const API_DOC_NAME = "./_apiDoc.html"
+const API_DOC_NAME = "./doc/_apiDoc.html"
+const API_DOC_TITLE = "Iris_Rest_Api接口文档"
 
-var apiRoutesHeader = `package main
+var apiRoutesHeader = `
+// +build !create_router
+
+package main
 import (
 	"encoding/json"
 	"github.com/kataras/iris/v12"
@@ -49,10 +74,17 @@ func loadRouteHandlers() {
 var ApiFuncTemplateCode = ""
 var ApiFuncRoutesCode = apiRoutesHeader
 var RouterHandlerList = ""
-var apiDoc_All = "Api接口文档\n"
+var apiDoc_All = API_DOC_TITLE + "\n"
 var apiDoc_Categories = "目录：\n"
 var apiDoc_Content = ""
 var apiInfoGroups []ApiInfoGroup = make([]ApiInfoGroup, 0)
+var structInfos []StructInfo = make([]StructInfo, 0)
+var apiDocInfo = ApiDocInfo{
+	ApiDocTitle:   API_DOC_TITLE,
+	Time:          time.Now().Format("2006-01-02T15:04:05.000Z07:00"),
+	ApiInfoGroups: apiInfoGroups,
+	StructInfos:   structInfos,
+}
 var apiDocStructAll = "X.公共数据结构\n"
 
 func getRoutePath(routeFunctionName string) (routePath string) {
@@ -151,7 +183,8 @@ func CreateApiRoutesCode(apiInterfaces ...interface{}) bool {
 			fmt.Printf("%s", err.Error())
 		}
 	}
-	create_doc()
+	create_doc_txt()
+	create_doc_json()
 	return true
 }
 
@@ -166,6 +199,10 @@ func getModlesType() {
 			typeName := typ.String()
 			if strings.Contains(typeName, "*models.") {
 				j += 1
+				var structInfo = StructInfo{
+					StructName: typ.Elem().String(),
+					Fields:     make([]JsonFieldInfo, 0),
+				}
 				apiDoc_Categories += "\tX." + strconv.Itoa(j) + ". " + typ.Elem().String() + "\n"
 				apiDocStructAll += "\tX." + strconv.Itoa(j) + ". " + typ.Elem().String() + "\n"
 				fmt.Println(typ.Elem().String())
@@ -174,14 +211,31 @@ func getModlesType() {
 				//v := reflect.New(typ)
 				for i := 0; i < s.NumField(); i++ { // s must struct
 					fieldType := s.Field(i)
+					var required = false
+					var description = fieldType.Tag.Get("q")
+					if strings.Contains(description, "required") {
+						required = true
+					}
+					description = strings.Replace(description, "required,", "", 1)
+					if strings.HasPrefix(description, ",") {
+						description = strings.Replace(description, ",", "", 1)
+					}
+					var jsonFieldInfo = JsonFieldInfo{
+						Name:        fieldType.Tag.Get("json"),
+						Type:        fieldType.Type.String(),
+						Required:    required,
+						Description: description,
+					}
+					structInfo.Fields = append(structInfo.Fields, jsonFieldInfo)
 					apiDocStructAll += "\t\t" + fieldType.Tag.Get("json") + "\t\t" + fieldType.Type.String() + "\t\t" + fieldType.Tag.Get("q") + "\n"
 				}
+				structInfos = append(structInfos, structInfo)
 			}
 		}
 	}
 }
 
-func create_doc() {
+func create_doc_txt() {
 	for i, _ := range apiInfoGroups {
 		apiDoc_Categories += strconv.Itoa(i+1) + ". " + apiInfoGroups[i].ApiType + "\n"
 		apiDoc_Content += strconv.Itoa(i+1) + ". " + apiInfoGroups[i].ApiType + "\n"
@@ -202,10 +256,29 @@ func create_doc() {
 	apiDoc_Categories += "X. 附录：\n"
 	getModlesType()
 	apiDoc_All += apiDoc_Categories + "\n\n" + apiDoc_Content + "\n\n" + apiDocStructAll
-	_ = os.Remove(API_DOC_NAME)
-	err := utils.WriteFile(API_DOC_NAME, apiDoc_All)
+	_ = os.Remove(API_DOC_NAME + ".txt")
+	err := utils.WriteFile(API_DOC_NAME+".txt", apiDoc_All)
 	if err != nil {
 		fmt.Printf("%s", err.Error())
 	}
+	return
+}
+
+func create_doc_json() {
+	apiDocInfo = ApiDocInfo{
+		ApiDocTitle:   API_DOC_TITLE,
+		Time:          time.Now().Format("2006-01-02T15:04:05.000Z07:00"),
+		ApiInfoGroups: apiInfoGroups,
+		StructInfos:   structInfos,
+	}
+	bytesApiDocInfo, err := json.Marshal(apiDocInfo)
+	if err == nil {
+		_ = os.Remove(API_DOC_NAME + ".js")
+		err := utils.WriteFile(API_DOC_NAME+".js", "var apiDoc = "+string(bytesApiDocInfo)+";")
+		if err != nil {
+			fmt.Printf("%s", err.Error())
+		}
+	}
+
 	return
 }

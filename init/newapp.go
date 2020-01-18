@@ -64,9 +64,9 @@ func NewApp() *iris.Application {
 	if DevMode && BuildApiDoc { // 仅在dev模式生成文档
 		yaag.Init(&yaag.Config{ // <- IMPORTANT, init the middleware.
 			On:       true,
-			DocTitle: "Iris_Rest_Api",
-			DocPath:  "apiDoc.html",
-			BaseUrls: map[string]string{"Production": API_DOC_TITLE, "Staging": time.Now().Format("2006-01-02T15:04:05.000Z07:00"), "Your Info": "Here"},
+			DocTitle: TEST_DOC_TITLE,
+			DocPath:  TEST_DOC_NAME,
+			BaseUrls: map[string]string{"Production": TEST_DOC_TITLE, "Staging": time.Now().Format("2006-01-02T15:04:05.000Z07:00"), "Your Info": "Here"},
 		})
 		App.Use(irisyaag.New())
 	}

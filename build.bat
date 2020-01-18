@@ -1,2 +1,3 @@
-go run -tags=create_router app.go apiRoutes.go
-go build app.go apiRoutes.go
+go run -tags=create_router app.go emptyLoadRouteHandlers.go
+go test -count=1
+go build

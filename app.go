@@ -15,7 +15,7 @@ import (
 func main() {
 
 	isRuningForCreateRouter := routes_code_creator.CreateApiRoutesCode(
-		// 这里添加新的接口类
+		// TODO: add your api here
 		api.UserApi{},
 		api.FaqApi{},
 	)

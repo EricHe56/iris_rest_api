@@ -1,0 +1,387 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script type="text/javascript" src="_apiDoc.html.js"></script>
+		<link href="gfm.css" media="all" rel="stylesheet" type="text/css">
+		<style>
+			.doc-time {
+				display: block;
+				margin-top: -16px;
+				color: lightgray;
+			}
+			.back {
+				font-size: 0.6em;
+			}
+		</style>
+	</head>
+	<body>
+		<article id="doc" class="markdown-body entry-content" style="padding: 30px;">
+			<div id="docTop"></div>
+		</article>
+	</body>
+	<script type="text/javascript">
+		function addChild(parentElm, childTagName, classNameText, contentText, id, link) {
+			var elm = document.createElement(childTagName)
+			elm.id = id
+			if ((classNameText!==null)&&(classNameText!=="")) {
+				elm.classList.add(classNameText)
+			}
+			if (link === null) {
+				elm.innerHTML= contentText
+			}else{
+				elm.innerHTML="<a href=\""+link+"\">"+contentText+"</a>"
+			}
+			
+			parentElm.appendChild(elm)
+			return elm
+		}
+		function addTable(parentElm, array) {
+			var table = document.createElement("table")
+			var thead = document.createElement("thead")
+			var tbody = document.createElement("tbody")
+			for(var i=0; i<array.length;i++) {
+				var row = array[i]
+				var tr = document.createElement("tr")
+				if (i === 0) {
+					thead.appendChild(tr)
+					for(var j=0; j<row.length; j++) {
+						var cellText = row[j]
+						var th = document.createElement("th")
+						th.innerHTML = cellText
+						th.align="center"
+						tr.appendChild(th)
+					}
+				}else{
+					tbody.appendChild(tr)
+					for(var j=0; j<row.length; j++) {
+						var cellText = row[j]
+						var td = document.createElement("td")
+						td.innerHTML = cellText
+						td.align = "left"
+						tr.appendChild(td)
+					}
+				}
+			}
+			table.appendChild(thead)
+			table.appendChild(tbody)
+			if (parentElm!==null) {
+				parentElm.appendChild(table)
+			}
+			return table
+		}
+		function fieldType2Link(fieldType){
+			// 查找并替换已知结构名，长名匹配
+			var fieldTypeText = fieldType
+			var linkTypes = apiDoc.StructInfos.filter(a=>fieldType.includes(a.StructName))
+			while (linkTypes.length>1) {	// 检查防止类似类型重复替换，短类名去掉
+				linkTypes.sort((a,b)=>b.StructName.length-a.StructName.length)
+				for(var p=0; p<(linkTypes.length-1); p++) {
+					var lastTypeName = linkTypes[linkTypes.length-1].StructName
+					if (linkTypes[p].StructName.includes(lastTypeName)) {
+						linkTypes.pop()
+					}
+				}
+			}
+			for(var n=0; n<linkTypes.length; n++) {
+				var linkType = linkTypes[n]
+				var alink = "<a href=\"#"+linkType.StructName+"\">"+linkType.StructName+"</a>"
+				var regex = new RegExp(linkType.StructName, "g")
+				fieldTypeText = fieldTypeText.replace(regex, "{{$$$$$$}}")
+				fieldTypeText = fieldTypeText.replace(/\{\{\$\$\$\}\}/g, alink)
+			}
+			return fieldTypeText
+		}
+		function structName2TableData(structName) {
+			var structInfo = apiDoc.StructInfos.filter(a=>a.StructName===structName)[0]
+			var tblData = []
+			tblData.push(["字段", "类型", "必填","描述"])
+			for(var m=0; m<structInfo.Fields.length; m++) {
+				var field = structInfo.Fields[m]
+				if ((apiDoc.StructInfos.filter(a=>field.Type.includes(a.StructName)).length>0)&&
+					(!field.Type.includes("struct {"))) {
+					var fieldTypeText = fieldType2Link(field.Type)
+					tblData.push([field.Name, fieldTypeText, (field.Required)?"是":"", field.Description])
+				}else{
+					tblData.push([field.Name, field.Type, (field.Required)?"是":"", field.Description])
+				}
+			}
+			return tblData
+		}
+		function structString2Data(structString) {
+			var structData = {
+				Name: "",
+				Type: "",
+				Fields: [],
+				JsonName: "",
+				BsonName: "",
+				Required: false,
+				Description:"",
+				Step: 1,
+			}
+			var curPath = []
+			var curStruct = structData
+			curPath.push(structData)
+			if (structString.startsWith("struct { ")&&(structString.endsWith("}"))) {
+				var strArray = structString.split(" ")
+				for(var i=0; i<strArray.length; i++) {
+					if (curStruct.Step === 0) {
+						curStruct.Name = strArray[i]
+						curStruct.Step++
+					}else if (curStruct.Step === 1) {
+						if ((strArray[i]==="struct")||(strArray[i]==="[]struct")) {
+							curStruct.Type = strArray[i]
+						}else if(strArray[i]==="{") {
+							// parent level step keep in 1 when start new sub
+							var subStructData = {
+								Name: "",
+								Type: "",
+								Fields: [],
+								JsonName: "",
+								BsonName: "",
+								Required: false,
+								Description:"",
+								Step: 0,				// new sub step 0
+							}
+							curStruct.Fields.push(subStructData)
+							curPath.push(subStructData)
+							curStruct = subStructData	// new sub 
+						}else if(strArray[i]==="}"){
+							curPath.pop()
+							curStruct = curPath[curPath.length-1]
+							// new sub finished, continiue parent process
+							curStruct.Step ++
+						}else{
+							// general field type
+							curStruct.Type = strArray[i]
+							curStruct.Step++
+						}
+					}else if (curStruct.Step === 2) {
+						// ""json:\"id\""
+						if ((strArray[i].startsWith("\"json:\\\""))&&(strArray[i].endsWith("\\\""))) {
+							var strTemp = strArray[i].replace("\"json:\\\"", "")
+							strTemp = strTemp.substring(0, strTemp.length-2)
+							curStruct.JsonName = strTemp
+						}else if ((strArray[i].startsWith("json:\\\""))&&(strArray[i].endsWith("\\\""))) {
+							// "json:\"_id\""
+							var strTemp = strArray[i].replace("json:\\\"", "")
+							strTemp = strTemp.substring(0, strTemp.length-2)
+							curStruct.JsonName = strTemp
+						}else if ((strArray[i].startsWith("\"bson:\\\""))&&(strArray[i].endsWith("\\\""))) {
+							// ""bson:\"id\""
+							var strTemp = strArray[i].replace("\"bson:\\\"", "")
+							strTemp = strTemp.substring(0, strTemp.length-2)
+							curStruct.BsonName = strTemp
+						}else if ((strArray[i].startsWith("bson:\\\""))&&(strArray[i].endsWith("\\\""))) {
+							// "bson:\"_id\""
+							var strTemp = strArray[i].replace("bson:\\\"", "")
+							strTemp = strTemp.substring(0, strTemp.length-2)
+							curStruct.BsonName = strTemp
+						}else if ((strArray[i].startsWith("q:\\\""))&&(strArray[i].endsWith("\\\"\";"))) {
+							// "q:\",线路编号\"";"
+							var strTemp = strArray[i].replace("q:\\\"", "")
+							strTemp = strTemp.substring(0, strTemp.length-4)
+							if (strTemp.startsWith("required")) {
+								curStruct.Required = true
+								strTemp = strTemp.replace("required")
+							}
+							if (strTemp.startsWith(",")) {
+								strTemp = strTemp.replace(",", "")
+								curStruct.Description += strTemp
+							}
+						}else if (strArray[i].startsWith("q:\\\"")) {
+							// "q:\",线路编号"
+							var strTemp = strArray[i].replace("q:\\\"", "")
+							if (strTemp.startsWith("required")) {
+								curStruct.Required = true
+								strTemp = strTemp.replace("required")
+							}
+							if (strTemp.startsWith(",")) {
+								strTemp = strTemp.replace(",", "")
+							}
+							if (strTemp.endsWith("\\\"\"")) {
+								strTemp = strTemp.substring(0, strTemp.length-3)
+							}
+							curStruct.Description += strTemp
+						}else if(strArray[i]==="}"){
+							// new sub finished, continiue parent process
+							curPath.pop()
+							curStruct = curPath[curPath.length-1]
+							curStruct.Step++
+						}else{
+							var strTemp = strArray[i]
+							if (strTemp.endsWith(";")) {
+								strTemp = strArray[i].substring(0, strArray[i].length-1)
+							}
+							if (strTemp.startsWith("\"")) {
+								strTemp = strTemp.replace("\"", "")
+							}
+							if (strTemp.endsWith("\\\"\"")) {
+								strTemp = strTemp.substring(0, strTemp.length-3)
+							}
+							if (strTemp.endsWith("\"")) {
+								strTemp = strTemp.substring(0, strTemp.length-1)
+							}
+							curStruct.Description += " " + strTemp
+						}
+						// check all the times
+						if (strArray[i].endsWith(";")) {
+							// end curStruct start next
+							curPath.pop()
+							var subStructData = {
+								Name: "",
+								Type: "",
+								Fields: [],
+								JsonName: "",
+								BsonName: "",
+								Required: false,
+								Description:"",
+								Step: 0,				// new sub step 0
+							}
+							curPath[curPath.length-1].Fields.push(subStructData)
+							curPath.push(subStructData)
+							curStruct = subStructData	// new sub 
+						}
+					}
+				}
+			}
+			console.log(JSON.stringify(structData))
+			return structData
+		}
+		function structData2Table(structData) {
+			var table = document.createElement("table")
+			var thead = document.createElement("thead")
+			var tbody = document.createElement("tbody")
+			// tHead
+			var tr = document.createElement("tr")
+			thead.appendChild(tr)
+			var titles = ["字段", "类型", "必填", "描述"]
+			for(var j=0; j<4; j++) {
+				var cellText = titles[j]
+				var th = document.createElement("th")
+				th.innerHTML = cellText
+				th.align="center"
+				tr.appendChild(th)
+			}
+			// tBody
+			for(var i=0; i<structData.Fields.length;i++) {
+				var field = structData.Fields[i]
+				var jsonName = (field.JsonName==="")?field.Name:field.JsonName
+				var row = []
+				if (apiDoc.StructInfos.filter(a=>field.Type.includes(a.StructName)).length>0) {
+					var fieldTypeText = fieldType2Link(field.Type)
+					row = [jsonName, fieldTypeText, (field.Required)?"是":"", field.Description]
+				}else if(field.Type.startsWith("struct")||field.Type.startsWith("[]struct")) {
+					var innerTable = structData2Table(field)
+					var fieldTypeLink = "<a href=\"JavaScript:void();\">"+field.Type+"</a>"
+					row = [jsonName, fieldTypeLink+innerTable.outerHTML, (field.Required)?"是":"", field.Description]
+				}
+				else{
+					row = [jsonName, field.Type, (field.Required)?"是":"", field.Description]
+				}
+				var tr = document.createElement("tr")
+				tbody.appendChild(tr)
+				for(var j=0; j<4; j++) {
+					var cellText = row[j]
+					var td = document.createElement("td")
+					td.innerHTML = cellText
+					td.align = "left"
+					tr.appendChild(td)
+				}
+			}
+			table.appendChild(thead)
+			table.appendChild(tbody)
+			return table
+		}
+		
+		var goBack = "<a class=\"back\" href=\"javascript:history.back(-1)\">(返回)</a>"
+		var doc = document.getElementById("doc")
+		var title = addChild(doc, "h2", "", apiDoc.ApiDocTitle, apiDoc.ApiDocTitle, null)
+		var time = addChild(doc, "span", "doc-time", apiDoc.Time, "", null)
+		addChild(doc, "h3", "", "目录：", "", null)
+		var categories = addChild(doc, "ul", "", "", "", null)
+		for(var i=0; i< apiDoc.ApiInfoGroups.length; i++) {
+			var apiInfoGroup = apiDoc.ApiInfoGroups[i]
+			var cGroup = addChild(categories, "li", "", (i+1) + ". " + apiInfoGroup.ApiType, "", "#" + apiInfoGroup.ApiType)
+			var cGroupUl = addChild(categories, "ul", "", "", "", null)
+			for(var j=0; j < apiInfoGroup.ApiList.length; j++) {
+				var apiFunc = apiInfoGroup.ApiList[j]
+				var cFunc = addChild(cGroupUl, "li", "", (i+1) + ". " + (j+1) + ". " + apiFunc.ApiFunction + "接口", "", "#" + apiInfoGroup.ApiType +"."+apiFunc.ApiFunction)
+			}
+		}
+		var cX = addChild(categories, "li", "", "X. 附录", "", "#" + "X. 附录")
+		var cXUl = addChild(categories, "ul", "", "", "", null)
+		for(var k=0; k<apiDoc.StructInfos.length; k++) {
+			var structInfo = apiDoc.StructInfos[k]
+			var cStruct = addChild(cXUl, "li", "", "X." + (k+1) + ". " + structInfo.StructName, "", "#" + structInfo.StructName)
+		}
+		addChild(doc, "h3", "", "正文：", "", null)
+		for(var i=0; i< apiDoc.ApiInfoGroups.length; i++) {
+			var apiInfoGroup = apiDoc.ApiInfoGroups[i]
+			var cGroup = addChild(doc, "h3", "", (i+1) + ". " + apiInfoGroup.ApiType + goBack, apiInfoGroup.ApiType, null)
+			var cGroupUl = addChild(doc, "ul", "", "", "", null)
+			for(var j=0; j < apiInfoGroup.ApiList.length; j++) {
+				var apiFunc = apiInfoGroup.ApiList[j]
+				var cFunc = addChild(cGroupUl, "h4", "", (i+1) + "." + (j+1) + ". " + apiFunc.ApiFunction + "接口" + goBack, apiInfoGroup.ApiType +"."+apiFunc.ApiFunction, null)
+				var ul = addChild(cGroupUl, "ul", "", "", "", null)
+				addChild(ul, "h5", "", (i+1) + "." + (j+1) + ".1. " + "路径: /" + apiFunc.RoutePath, "", null)
+				addChild(ul, "h5", "", (i+1) + "." + (j+1) + ".2. " + "请求信息包体: ", "", null)
+				if (apiDoc.StructInfos.filter(a=>a.StructName===apiFunc.ReqType).length>0) {
+					var tblData = structName2TableData(apiFunc.ReqType)
+					var fieldTypeLink = "<a href=\"#"+apiFunc.ReqType+"\">"+apiFunc.ReqType+"</a>"
+					addChild(ul, "span", "", apiFunc.ReqType, "", "#"+apiFunc.ReqType)
+					addTable(ul, tblData)
+				}else{
+					if (apiFunc.ReqType.includes("struct")) {
+						var structData = structString2Data(apiFunc.ReqType)
+						var table = structData2Table(structData)
+						var fieldTypeLink = "<a href=\"JavaScript:void();\">struct</a>"
+						addChild(ul, "span", "", fieldTypeLink, "", null)
+						ul.appendChild(table)
+					}else{
+						addChild(ul, "p", "", apiFunc.ReqType, "", null)
+					}
+				}
+				addChild(ul, "h5", "", (i+1) + "." + (j+1) + ".3. " + "返回信息包体: ", "", null)
+				var tblData = []
+				tblData.push(["字段", "类型", "描述"])
+				tblData.push(["code", "int", "返回错误代码，0为操作成功,参考message返回内容"])
+				tblData.push(["message", "string", "返回code代码对应的信息"])
+				if (apiDoc.StructInfos.filter(a=>a.StructName===apiFunc.RtnDataType).length>0) {
+					var tblData1 = structName2TableData(apiFunc.RtnDataType)
+					var innerTable = addTable(null, tblData1)
+					var fieldTypeLink = "<a href=\"#"+apiFunc.RtnDataType+"\">"+apiFunc.RtnDataType+"</a>"
+					tblData.push(["data", fieldTypeLink+innerTable.outerHTML, "返回包体数据对象"])
+				}else if(apiFunc.RtnDataType.startsWith("struct")&&((apiFunc.RtnDataType!=="struct {}"))) {
+					var structData = structString2Data(apiFunc.RtnDataType)
+					var table = structData2Table(structData)
+					var showType = apiFunc.RtnDataType.split(" ")[0]
+					var fieldTypeLink = "<a href=\"JavaScript:void();\">"+showType+"</a>"
+					tblData.push(["data", fieldTypeLink+table.outerHTML, "返回包体数据对象"])
+				}
+				else{
+					tblData.push(["data", apiFunc.RtnDataType, "返回包体数据对象"])
+				}
+				addTable(ul, tblData)
+			}
+		}
+		addChild(doc, "h3", "", "X. 附录"+goBack, "X. 附录", null)
+		var xUl = addChild(doc, "ul", "", "", "", null)
+		for(var k=0; k<apiDoc.StructInfos.length; k++) {
+			var structInfo = apiDoc.StructInfos[k]
+			var xStruct = addChild(xUl, "h4", "", "X." + (k+1) + ". " + structInfo.StructName+goBack, structInfo.StructName, null)
+			var tblData = []
+			tblData.push(["字段", "类型", "必填","描述"])
+			for(var m=0; m<structInfo.Fields.length; m++) {
+				var field = structInfo.Fields[m]
+				if ((apiDoc.StructInfos.filter(a=>field.Type.includes(a.StructName)).length>0)&&
+					(!field.Type.includes("struct {"))) {
+					var fieldTypeText = fieldType2Link(field.Type)
+					tblData.push([field.Name, fieldTypeText, (field.Required)?"是":"", field.Description])
+				}else{
+					tblData.push([field.Name, field.Type, (field.Required)?"是":"", field.Description])
+				}
+			}
+			addTable(xStruct, tblData)
+		}
+	</script>
+</html>

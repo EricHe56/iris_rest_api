@@ -23,8 +23,8 @@ func TestApiDocByRequest(t *testing.T) {
 
 // 内部测试直接生成文档，不需要运行参数支持
 func TestApi2Doc(t *testing.T) {
-	_ = os.Remove(YAAG_DOC_NAME)
-	_ = os.Remove(YAAG_DOC_JSON_NAME)
+	_ = os.Remove(TEST_DOC_NAME)
+	_ = os.Remove(TEST_DOC_NAME + ".json")
 	DevMode = true
 	BuildApiDoc = true
 	app := NewApp()

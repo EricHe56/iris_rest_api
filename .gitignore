@@ -23,8 +23,8 @@ _testmain.go
 *.test
 *.prof
 .idea
-/apiDoc.html
-/apiDoc.html.json
 /apiRoutes.go
-/routes_code_creator/apiRoutes.go
-/_apiDoc.html
+/doc/_testDoc.html
+/doc/_testDoc.html.json
+/doc/_apiDoc.html.txt
+/doc/_apiDoc.html.js

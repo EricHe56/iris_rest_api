@@ -15,10 +15,9 @@ import (
 	_ "strings"
 )
 
-const YAAG_DOC_NAME = "./apiDoc.html"
-const YAAG_DOC_JSON_NAME = "./apiDoc.html.json"
+const TEST_DOC_NAME = "./doc/_testDoc.html"
 
-const API_DOC_TITLE = "Iris Rest Api"
+const TEST_DOC_TITLE = "Iris Rest Api"
 
 const (
 	DB    = "test"
