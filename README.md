@@ -25,8 +25,8 @@ The system will automatically generate router code through conditional compilati
             - go run app.go apiRoutes.go dev
 
 ### Explanation:
-1. Automatically create interface documentation at ./doc/_apiDoc.html
-2. Automatically generate test documentation at ./doc/_testDoc.html
+1. Automatically create interface documentation at http://localhost:8080/_doc/_apiDoc.html
+2. Automatically generate test documentation at http://localhost:8080/_doc/_testDoc.html
 3. The configuration file is in the conf directory: port, cross domain, mongo, redis, etc.
 4. Database related structures can be placed in ./models/db_struct.go, and structures used only for interfaces are placed in ./models/api_struct
 5. Unit tests can be written in app_test.go (with examples) and run: 

@@ -22,6 +22,7 @@ func main() {
 	if !isRuningForCreateRouter {
 		App = NewApp()
 		loadRouteHandlers()
+		App.HandleDir("/_doc", "./doc")
 		port := IniConfiger.String("httpport")
 		_ = App.Run(iris.Addr(":"+port), iris.WithConfiguration(iris.Configuration{ //默认配置:
 			DisableStartupLog:                 false,

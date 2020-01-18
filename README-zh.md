@@ -23,8 +23,8 @@
             -  go run app.go apiRoutes.go dev
 
 ### 说明：
-1. 自动创建接口文档在doc/_apiDoc.html
-2. 自动生成测试文档在doc/_testDoc.html
+1. 自动创建接口文档在http://localhost:8080/_doc/_apiDoc.html
+2. 自动生成测试文档在http://localhost:8080/_doc/_testDoc.html
 3. 配置文件在conf目录中： 端口、跨域、mongo、redis等
 4. 可以将数据库相关的结构放在models/db_struct.go中，仅用于接口的结构放在models/api_struct中
 5. 单元测试可以写在app_test.go中（有范例）运行： 
