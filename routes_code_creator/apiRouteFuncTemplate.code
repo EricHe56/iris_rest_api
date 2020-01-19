@@ -14,12 +14,15 @@ func {{routeFunctionName}}(ctx iris.Context) {
 
 	var req {{reqType}}
 	body := ctx.Values().GetString("body")
+    if body=="" {
+        body = "{}"
+    }
 	err := json.Unmarshal([]byte(body), &req)
 	if err != nil {
 		bodyR.Data = err.Error()
 		StdPrint.Error(err.Error())
 	} else {
-		bodyR.Code, bodyR.Data, err = {{apiType}}.{{apiFunction}}(apiX, req)
+		bodyR.Code, bodyR.Data, err = {{apiType}}.{{apiFunction}}{{apiFunctionInput}}
 		bodyR.Message = apiX.CodeDescription[bodyR.Code]
 		if err != nil {
 			bodyR.Data = err.Error()

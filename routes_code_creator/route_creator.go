@@ -111,7 +111,7 @@ func getReqType(methodType string) (reqType string) {
 }
 
 func getRtnDataType(methodType string) (rtnDataType string) {
-	regexp1, _ := regexp.Compile("func\\([\\w\\W]+\\) \\(int, ")
+	regexp1, _ := regexp.Compile("func\\([\\w\\W]*\\) \\(int, ")
 	var str1 = regexp1.ReplaceAllString(methodType, "")
 	regexp2, _ := regexp.Compile(", error\\)$")
 	rtnDataType = regexp2.ReplaceAllString(str1, "")
@@ -122,9 +122,18 @@ func customizeFunction(apiFuncTemplateCode string, apiRouteInfo ApiRouteInfo) {
 	var funcCode = apiFuncTemplateCode
 	var routeFunctionName = strings.ReplaceAll(apiRouteInfo.ApiType, "api.", "") + "_" + apiRouteInfo.ApiFunction
 	funcCode = strings.ReplaceAll(funcCode, "{{apiType}}", apiRouteInfo.ApiType)
-	funcCode = strings.ReplaceAll(funcCode, "{{reqType}}", apiRouteInfo.ReqType)
+	var ReqType = apiRouteInfo.ReqType
+	if apiRouteInfo.ReqType == "" {
+		ReqType = "interface{}"
+	}
+	funcCode = strings.ReplaceAll(funcCode, "{{reqType}}", ReqType)
 	funcCode = strings.ReplaceAll(funcCode, "{{apiFunction}}", apiRouteInfo.ApiFunction)
 	funcCode = strings.ReplaceAll(funcCode, "{{routeFunctionName}}", routeFunctionName)
+	var funcInput = "(apiX, req)"
+	if apiRouteInfo.ReqType == "" {
+		funcInput = "(apiX)"
+	}
+	funcCode = strings.ReplaceAll(funcCode, "{{apiFunctionInput}}", funcInput)
 	ApiFuncRoutesCode += funcCode
 
 	var routeHandeler = "	App.Handle(\"ANY\", \"/" + apiRouteInfo.RoutePath + "\", " + routeFunctionName + ")\n"
@@ -160,6 +169,7 @@ func registerApi(x interface{}) (apiInfoGroup ApiInfoGroup) {
 		var pathGroupName = strings.ReplaceAll(apiRouteInfo.ApiType, "api.", "")
 		pathGroupName = strings.ReplaceAll(pathGroupName, "Api", "")
 		apiRouteInfo.RoutePath = getRoutePath(pathGroupName + "_" + apiRouteInfo.ApiFunction)
+		//apiRouteInfo.RoutePath = getRoutePath(apiRouteInfo.ApiFunction)
 		customizeFunction(ApiFuncTemplateCode, apiRouteInfo)
 		apiInfoGroup.ApiList = append(apiInfoGroup.ApiList, apiRouteInfo)
 		fmt.Printf("func (%s) %s%s\n", t.Name(), t.Method(i).Name,
@@ -197,7 +207,7 @@ func getModlesType() {
 			typ := reflect.TypeOf(*(*interface{})(unsafe.Pointer(&typeAddr)))
 			//fmt.Println(typ.String())
 			typeName := typ.String()
-			if strings.Contains(typeName, "*models.") {
+			if strings.Contains(typeName, "*models.") || strings.Contains(typeName, "*api.") {
 				j += 1
 				var structInfo = StructInfo{
 					StructName: typ.Elem().String(),
