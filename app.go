@@ -16,8 +16,9 @@ func main() {
 
 	isRuningForCreateRouter := routes_code_creator.CreateApiRoutesCode(
 		// TODO: add your api here
-		api.UserApi{},
+		api.AdminApi{},
 		api.FaqApi{},
+		api.UserApi{},
 	)
 	if !isRuningForCreateRouter {
 		App = NewApp()

@@ -16,7 +16,7 @@ type FaqApi struct {
 	R               *http.Request
 }
 
-func (x FaqApi) Faq_Insert(req Faq) (code int, data struct {
+func (x FaqApi) Insert(req Faq) (code int, data struct {
 	ID bson.ObjectId `json:"id" q:",返回id"`
 }, e error) {
 	session := CloneSession()
@@ -36,7 +36,7 @@ func (x FaqApi) Faq_Insert(req Faq) (code int, data struct {
 	return
 }
 
-func (x FaqApi) Faq_Replace(req Faq) (code int, data struct{}, e error) {
+func (x FaqApi) Replace(req Faq) (code int, data struct{}, e error) {
 	session := CloneSession()
 	defer session.Close()
 
@@ -51,7 +51,7 @@ func (x FaqApi) Faq_Replace(req Faq) (code int, data struct{}, e error) {
 	return
 }
 
-func (x FaqApi) Faq_Page(req PageData) (code int, data struct {
+func (x FaqApi) Page(req PageData) (code int, data struct {
 	List  []Faq `json:"list" q:",列表"`
 	Total int   `json:"total" q:",总数"`
 }, e error) {
@@ -74,7 +74,7 @@ func (x FaqApi) Faq_Page(req PageData) (code int, data struct {
 	return
 }
 
-func (x FaqApi) Faq_Delete(req struct {
+func (x FaqApi) Delete(req struct {
 	ID []bson.ObjectId `json:"id" q:",要删除的ID数组"`
 }) (code int, data struct{}, e error) {
 	session := CloneSession()
@@ -84,7 +84,7 @@ func (x FaqApi) Faq_Delete(req struct {
 	return
 }
 
-func (x FaqApi) Faq_Get(req struct {
+func (x FaqApi) Get(req struct {
 	ID []bson.ObjectId `json:"id" q:",要查询的ID数组"`
 }) (code int, data struct {
 	List []Faq `json:"list" q:",列表"`

@@ -20,8 +20,9 @@ const TEST_DOC_NAME = "./doc/_testDoc.html"
 const TEST_DOC_TITLE = "Iris Rest Api"
 
 const (
-	DB    = "test"
-	C_FAQ = "faq"
+	DB      = "test"
+	C_ADMIN = "admin"
+	C_FAQ   = "faq"
 )
 
 var GlobalCodeDescription = map[int]string{

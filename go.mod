@@ -11,10 +11,10 @@ require (
 	github.com/betacraft/yaag v1.0.0
 	github.com/fasthttp-contrib/websocket v0.0.0-20160511215533-1f3b11f56072 // indirect
 	github.com/gavv/httpexpect v2.0.0+incompatible
+	github.com/gbrlsnchs/jwt/v3 v3.0.0-rc.1
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/kataras/golog v0.0.10
-	github.com/kataras/iris v11.1.1+incompatible
 	github.com/kataras/iris/v12 v12.1.3
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/onsi/gomega v1.8.1 // indirect
