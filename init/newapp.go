@@ -5,7 +5,6 @@ package init
 import (
 	"github.com/astaxie/beego/config"
 	"github.com/betacraft/yaag/yaag"
-	"github.com/gomodule/redigo/redis"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
@@ -89,26 +88,20 @@ func NewApp() *iris.Application {
 	Info.Println("app service starting...")
 
 	// Redis 连接池
-	RedisClient = &redis.Pool{
-		MaxIdle:     100,
-		MaxActive:   4000,
-		IdleTimeout: 180 * time.Second,
-		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", IniConfiger.String("redis::host")+":"+IniConfiger.String("redis::port"), redis.DialPassword(IniConfiger.String("redis::pwd")))
-			if nil != err {
-				StdPrint.Error("redis connect error: ", err)
-				return nil, err
-			}
-			StdPrint.Info("redis connected")
-			return c, nil
-		},
-	}
+	var redisHost = IniConfiger.String("redis::host")
+	var redisPort = IniConfiger.String("redis::port")
+	var redisPwd = IniConfiger.String("redis::pwd")
+	RedisClient = RedisCnnPool(redisHost, redisPort, redisPwd)
 
 	// mongodb 连接池
+	var mongoHost = IniConfiger.String("mongodb::host")
+	var mongoPort = IniConfiger.String("mongodb::port")
+	var mongoUser = IniConfiger.String("mongodb::username")
+	var mongoPwd = IniConfiger.String("mongodb::password")
 	dialInfo := &mgo.DialInfo{
-		Addrs:    []string{IniConfiger.String("mongodb::host") + ":" + IniConfiger.String("mongodb::port")},
-		Username: IniConfiger.String("mongodb::username"),
-		Password: IniConfiger.String("mongodb::password"),
+		Addrs:    []string{mongoHost + ":" + mongoPort},
+		Username: mongoUser,
+		Password: mongoPwd,
 	}
 
 	globalMgoSession, err := mgo.DialWithInfo(dialInfo)

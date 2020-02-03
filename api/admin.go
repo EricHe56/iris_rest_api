@@ -73,14 +73,15 @@ func (x AdminApi) Login(req struct {
 			AdminUser: curAdmin,
 		}
 
-		new_token, e := jwt.Sign(pl, hs)
+		newToken, e := jwt.Sign(pl, hs)
 		if e != nil {
 			// ...
 			code = 50300
 			Info.Println(x.R.RequestURI, req, code, e)
 		} else {
 			code = 0
-			data.Token = string(new_token)
+			data.Token = string(newToken)
+			_ = RedisSetString(data.Token, "1", 8*3600)
 		}
 	} else {
 		code = 50300
@@ -119,6 +120,8 @@ func (x AdminApi) Info(req struct {
 }
 
 func (x AdminApi) Logout(req Admin) (code int, data string, e error) {
+	xToken := x.R.Header.Get("X-Token")
+	_ = RedisDelString(xToken)
 	code = 0
 	data = "success"
 	return

@@ -53,6 +53,23 @@ var JsonOptions = iris.JSON{
 
 func Pre_Handler(ctx iris.Context) {
 	//ctx.Application().Logger().Println("Before Handler--Method: ", ctx.Method(), "Runs before %s", ctx.Path())
+	path := ctx.Path()
+	if path != "/admin/login" {
+		xToken := ctx.GetHeader("X-Token")
+		if !RedisIsExist(xToken) {
+			_, _ = ctx.JSON(ResponseBody{
+				Code:    50008, //50008: Illegal token, re-login
+				Message: "X-Token Error",
+				Data:    "",
+			}, JsonOptions)
+			return
+		} else {
+			value, _ := RedisGetString(xToken)
+			ttl, _ := RedisTTL(xToken)
+			StdPrint.Info(value, ttl)
+		}
+	}
+
 	bytes, _ := ctx.GetBody()
 	ctx.Values().Set("body", string(bytes))
 	rnd := rand.Float64()
