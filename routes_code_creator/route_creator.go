@@ -17,11 +17,12 @@ import (
 )
 
 type ApiRouteInfo struct {
-	ApiType     string // api类型 如： api.UserApi
-	ApiFunction string // api函数名称
-	ReqType     string // api函数body请求参数结构类型，对应函数的req声明
-	RtnDataType string // api函数返回data参数结构类型，对应函数返回的data声明
-	RoutePath   string // api函数路径
+	ApiType                string // api类型 如： api.UserApi
+	ApiFunction            string // api函数名称
+	ApiFunctionDescription string // api函数说明
+	ReqType                string // api函数body请求参数结构类型，对应函数的req声明
+	RtnDataType            string // api函数返回data参数结构类型，对应函数返回的data声明
+	RoutePath              string // api函数路径
 }
 
 type ApiInfoGroup struct {
@@ -86,6 +87,9 @@ var apiDocInfo = ApiDocInfo{
 	StructInfos:   structInfos,
 }
 var apiDocStructAll = "X.公共数据结构\n"
+
+var apiCodeAll = ""
+var modelsCodeAll = ""
 
 func getRoutePath(routeFunctionName string) (routePath string) {
 	strA := strings.Split(routeFunctionName, "")
@@ -155,15 +159,17 @@ func registerApi(x interface{}) (apiInfoGroup ApiInfoGroup) {
 
 	for i := 0; i < v.NumMethod(); i++ {
 		var apiRouteInfo = ApiRouteInfo{
-			ApiType:     "",
-			ApiFunction: "",
-			ReqType:     "",
-			RtnDataType: "",
-			RoutePath:   "",
+			ApiType:                "",
+			ApiFunction:            "",
+			ApiFunctionDescription: "",
+			ReqType:                "",
+			RtnDataType:            "",
+			RoutePath:              "",
 		}
 		methType := v.Method(i).Type()
 		apiRouteInfo.ApiType = t.String()
 		apiRouteInfo.ApiFunction = t.Method(i).Name
+		apiRouteInfo.ApiFunctionDescription = getCodeComment(strings.Split(apiRouteInfo.ApiType, ".")[1] + "." + apiRouteInfo.ApiFunction)
 		apiRouteInfo.ReqType = getReqType(methType.String())
 		apiRouteInfo.RtnDataType = getRtnDataType(methType.String())
 		var pathGroupName = strings.ReplaceAll(apiRouteInfo.ApiType, "api.", "")
@@ -179,6 +185,8 @@ func registerApi(x interface{}) (apiInfoGroup ApiInfoGroup) {
 }
 
 func CreateApiRoutesCode(apiInterfaces ...interface{}) bool {
+	apiCodeAll, _ = getAllCodeText("./api")
+	//modelsCodeAll, _ = getAllCodeText("./models")
 	apiFuncTemplateCode, err := utils.ReadFileInString(TEMPLATE_FILE_NAME)
 	ApiFuncTemplateCode = apiFuncTemplateCode
 	if err == nil {
@@ -290,5 +298,34 @@ func create_doc_json() {
 		}
 	}
 
+	return
+}
+
+func getAllCodeText(dirPath string) (codeText string, e error) {
+	files, _, err := utils.GetFilesAndDirs(dirPath)
+	if err != nil {
+		e = err
+		return
+	}
+	var fileText = ""
+	for _, v := range files {
+		fileText, err = utils.ReadFileInString(v)
+		if err != nil {
+			e = err
+			return
+		}
+		codeText += "\n//" + v + "\n" + fileText
+	}
+	return
+}
+
+func getCodeComment(methodName string) (comments string) {
+	var regexpStr = `(?ism)^//##` + methodName + `:[\w=<> \pP\p{Han}]*$`
+	regexp1, _ := regexp.Compile(regexpStr)
+	strMatched := regexp1.FindAllString(apiCodeAll, -1)
+	for _, v := range strMatched {
+		comments += strings.ReplaceAll(v, "//##"+methodName+": ", "") + "\n"
+	}
+	fmt.Println(comments)
 	return
 }

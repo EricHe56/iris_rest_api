@@ -191,6 +191,9 @@ func (x AdminApi) Page(req PageData) (code int, data struct {
 	return
 }
 
+//##AdminApi.Delete: 用于XXXXX
+//##AdminApi.Delete: author: <a href="mailto:myemail@abc.com">myemail@abc.com</a>
+//##AdminApi.Delete: 可以添加多行说明，并且可以使用少量html
 func (x AdminApi) Delete(req struct {
 	ID []bson.ObjectId `json:"id" q:",要删除的ID数组"`
 }) (code int, data struct{}, e error) {
