@@ -224,6 +224,9 @@ func getModlesType() {
 				apiDoc_Categories += "\tX." + strconv.Itoa(j) + ". " + typ.Elem().String() + "\n"
 				apiDocStructAll += "\tX." + strconv.Itoa(j) + ". " + typ.Elem().String() + "\n"
 				fmt.Println(typ.Elem().String())
+				if typ.Kind() != reflect.Struct {
+					continue
+				}
 				//fmt.Printf("%v", typ.Elem().Kind())
 				s := typ.Elem()
 				//v := reflect.New(typ)
