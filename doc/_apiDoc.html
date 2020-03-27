@@ -182,7 +182,7 @@
 							strTemp = strTemp.substring(0, strTemp.length-4);
 							if (strTemp.startsWith("required")) {
 								curStruct.Required = true;
-								strTemp = strTemp.replace("required")
+								strTemp = strTemp.replace("required", "")
 							}
 							if (strTemp.startsWith(",")) {
 								strTemp = strTemp.replace(",", "");
@@ -193,7 +193,7 @@
 							let strTemp = strArray[i].replace("q:\\\"", "");
 							if (strTemp.startsWith("required")) {
 								curStruct.Required = true;
-								strTemp = strTemp.replace("required")
+								strTemp = strTemp.replace("required", "")
 							}
 							if (strTemp.startsWith(",")) {
 								strTemp = strTemp.replace(",", "")
@@ -292,102 +292,122 @@
 			table.appendChild(tbody);
 			return table
 		}
-
-		let goBack = "<a class=\"back\" href=\"javascript:history.back(-1)\">(返回)</a>";
-		let doc = document.getElementById("doc");
-		let title = addChild(doc, "h2", "", apiDoc.ApiDocTitle, apiDoc.ApiDocTitle, null);
-		let time = addChild(doc, "span", "doc-time", apiDoc.Time, "", null);
-		addChild(doc, "h3", "", "目录：", "", null);
-		let categories = addChild(doc, "ul", "", "", "", null);
-		for(let i=0; i< apiDoc.ApiInfoGroups.length; i++) {
-			let apiInfoGroup = apiDoc.ApiInfoGroups[i];
-			let cGroup = addChild(categories, "li", "", (i+1) + ". " + apiInfoGroup.ApiType, "", "#" + apiInfoGroup.ApiType);
-			let cGroupUl = addChild(categories, "ul", "", "", "", null);
-			for(let j=0; j < apiInfoGroup.ApiList.length; j++) {
-				let apiFunc = apiInfoGroup.ApiList[j];
-				let cFunc = addChild(cGroupUl, "li", "", (i+1) + ". " + (j+1) + ". " + apiFunc.ApiFunction + "接口", "", "#" + apiInfoGroup.ApiType +"."+apiFunc.ApiFunction)
+		function fillDoc(){
+			let goBack = "<a class=\"back\" href=\"javascript:history.back(-1)\">(返回)</a>";
+			let doc = document.getElementById("doc");
+			let title = addChild(doc, "h2", "", apiDoc.ApiDocTitle, apiDoc.ApiDocTitle, null);
+			let time = addChild(doc, "span", "doc-time", apiDoc.Time, "", null);
+			addChild(doc, "h3", "", "目录：", "", null);
+			let categories = addChild(doc, "ul", "", "", "", null);
+			for(let i=0; i< apiDoc.ApiInfoGroups.length; i++) {
+				let apiInfoGroup = apiDoc.ApiInfoGroups[i];
+				let cGroup = addChild(categories, "li", "", (i+1) + ". " + apiInfoGroup.ApiType, "", "#" + apiInfoGroup.ApiType);
+				let cGroupUl = addChild(categories, "ul", "", "", "", null);
+				for(let j=0; j < apiInfoGroup.ApiList.length; j++) {
+					let apiFunc = apiInfoGroup.ApiList[j];
+					let cFunc = addChild(cGroupUl, "li", "", (i+1) + ". " + (j+1) + ". " + apiFunc.ApiFunction + "接口", "", "#" + apiInfoGroup.ApiType +"."+apiFunc.ApiFunction)
+				}
 			}
-		}
-		let cX = addChild(categories, "li", "", "X. 附录", "", "#" + "X. 附录");
-		let cXUl = addChild(categories, "ul", "", "", "", null);
-		for(let k=0; k<apiDoc.StructInfos.length; k++) {
-			let structInfo = apiDoc.StructInfos[k];
-			let cStruct = addChild(cXUl, "li", "", "X." + (k+1) + ". " + structInfo.StructName, "", "#" + structInfo.StructName)
-		}
-		addChild(doc, "h3", "", "正文：", "", null);
-		for(let i=0; i< apiDoc.ApiInfoGroups.length; i++) {
-			let apiInfoGroup = apiDoc.ApiInfoGroups[i];
-			let cGroup = addChild(doc, "h3", "", (i+1) + ". " + apiInfoGroup.ApiType + goBack, apiInfoGroup.ApiType, null);
-			let cGroupUl = addChild(doc, "ul", "", "", "", null);
-			for(let j=0; j < apiInfoGroup.ApiList.length; j++) {
-				let apiFunc = apiInfoGroup.ApiList[j];
-				let cFunc = addChild(cGroupUl, "h4", "", (i+1) + "." + (j+1) + ". " + apiFunc.ApiFunction + "接口" + goBack, apiInfoGroup.ApiType +"."+apiFunc.ApiFunction, null);
-				let ul = addChild(cGroupUl, "ul", "", "", "", null);
-				addChild(ul, "span", "", apiFunc.ApiFunctionDescription.replace(/\n/g, "<br>"), "", null);
-				addChild(ul, "h5", "", (i+1) + "." + (j+1) + ".1. " + "路径: /" + apiFunc.RoutePath, "", null);
-				addChild(ul, "h5", "", (i+1) + "." + (j+1) + ".2. " + "请求信息包体: ", "", null);
-				if (apiDoc.StructInfos.filter(a=>a.StructName===apiFunc.ReqType).length>0) {
-					let tblData = structName2TableData(apiFunc.ReqType);
-					let fieldTypeLink = "<a href=\"#"+apiFunc.ReqType+"\">"+apiFunc.ReqType+"</a>";
-					addChild(ul, "span", "", apiFunc.ReqType, "", "#"+apiFunc.ReqType);
+			let cX = addChild(categories, "li", "", "X. 附录", "", "#" + "X. 附录");
+			let cXUl = addChild(categories, "ul", "", "", "", null);
+			for(let k=0; k<apiDoc.StructInfos.length; k++) {
+				let structInfo = apiDoc.StructInfos[k];
+				let cStruct = addChild(cXUl, "li", "", "X." + (k+1) + ". " + structInfo.StructName, "", "#" + structInfo.StructName)
+			}
+			addChild(doc, "h3", "", "正文：", "", null);
+			for(let i=0; i< apiDoc.ApiInfoGroups.length; i++) {
+				let apiInfoGroup = apiDoc.ApiInfoGroups[i];
+				let cGroup = addChild(doc, "h3", "", (i+1) + ". " + apiInfoGroup.ApiType + goBack, apiInfoGroup.ApiType, null);
+				let cGroupUl = addChild(doc, "ul", "", "", "", null);
+				for(let j=0; j < apiInfoGroup.ApiList.length; j++) {
+					let apiFunc = apiInfoGroup.ApiList[j];
+					let cFunc = addChild(cGroupUl, "h4", "", (i+1) + "." + (j+1) + ". " + apiFunc.ApiFunction + "接口" + goBack, apiInfoGroup.ApiType +"."+apiFunc.ApiFunction, null);
+					let ul = addChild(cGroupUl, "ul", "", "", "", null);
+					addChild(ul, "span", "", apiFunc.ApiFunctionDescription.replace(/\n/g, "<br>"), "", null);
+					addChild(ul, "h5", "", (i+1) + "." + (j+1) + ".1. " + "路径: /" + apiFunc.RoutePath, "", null);
+					addChild(ul, "h5", "", (i+1) + "." + (j+1) + ".2. " + "请求信息包体: ", "", null);
+					if (apiDoc.StructInfos.filter(a=>a.StructName===apiFunc.ReqType).length>0) {
+						let tblData = structName2TableData(apiFunc.ReqType);
+						let fieldTypeLink = "<a href=\"#"+apiFunc.ReqType+"\">"+apiFunc.ReqType+"</a>";
+						addChild(ul, "span", "", apiFunc.ReqType, "", "#"+apiFunc.ReqType);
+						addTable(ul, tblData)
+					}else if (apiFunc.ReqType.includes("struct")) {
+						let structData = structString2Data(apiFunc.ReqType);
+						let table = structData2Table(structData);
+						let fieldTypeLink = "<a href=\"JavaScript:void();\">struct</a>";
+						addChild(ul, "span", "", fieldTypeLink, "", null);
+						ul.appendChild(table)
+					}else{
+						addChild(ul, "p", "", apiFunc.ReqType, "", null)
+					}
+
+					addChild(ul, "h5", "", (i+1) + "." + (j+1) + ".3. " + "返回信息包体: ", "", null);
+					let tblData = [];
+					tblData.push(["字段", "类型", "描述"]);
+					tblData.push(["code", "int", "返回错误代码，0为操作成功,参考message返回内容"]);
+					tblData.push(["message", "string", "返回code代码对应的信息"]);
+					if (apiDoc.StructInfos.filter(a=>a.StructName===apiFunc.RtnDataType).length>0) {
+						let tblData1 = structName2TableData(apiFunc.RtnDataType);
+						let innerTable = addTable(null, tblData1);
+						let fieldTypeLink = "<a href=\"#"+apiFunc.RtnDataType+"\">"+apiFunc.RtnDataType+"</a>";
+						tblData.push(["data", fieldTypeLink+innerTable.outerHTML, "返回包体数据对象"])
+					}else if(apiFunc.RtnDataType.startsWith("struct")&&((apiFunc.RtnDataType!=="struct {}"))) {
+						let structData = structString2Data(apiFunc.RtnDataType);
+						let table = structData2Table(structData);
+						let showType = apiFunc.RtnDataType.split(" ")[0];
+						let fieldTypeLink = "<a href=\"JavaScript:void();\">"+showType+"</a>";
+						tblData.push(["data", fieldTypeLink+table.outerHTML, "返回包体数据对象"])
+					}
+					else{
+						tblData.push(["data", apiFunc.RtnDataType, "返回包体数据对象"])
+					}
 					addTable(ul, tblData)
-				}else if (apiFunc.ReqType.includes("struct")) {
-					let structData = structString2Data(apiFunc.ReqType);
-					let table = structData2Table(structData);
-					let fieldTypeLink = "<a href=\"JavaScript:void();\">struct</a>";
-					addChild(ul, "span", "", fieldTypeLink, "", null);
-					ul.appendChild(table)
-				}else{
-					addChild(ul, "p", "", apiFunc.ReqType, "", null)
 				}
-
-				addChild(ul, "h5", "", (i+1) + "." + (j+1) + ".3. " + "返回信息包体: ", "", null);
+			}
+			addChild(doc, "h3", "", "X. 附录"+goBack, "X. 附录", null);
+			let xUl = addChild(doc, "ul", "", "", "", null);
+			for(let k=0; k<apiDoc.StructInfos.length; k++) {
+				let structInfo = apiDoc.StructInfos[k];
+				let xStruct = addChild(xUl, "h4", "", "X." + (k+1) + ". " + structInfo.StructName+goBack, structInfo.StructName, null);
 				let tblData = [];
-				tblData.push(["字段", "类型", "描述"]);
-				tblData.push(["code", "int", "返回错误代码，0为操作成功,参考message返回内容"]);
-				tblData.push(["message", "string", "返回code代码对应的信息"]);
-				if (apiDoc.StructInfos.filter(a=>a.StructName===apiFunc.RtnDataType).length>0) {
-					let tblData1 = structName2TableData(apiFunc.RtnDataType);
-					let innerTable = addTable(null, tblData1);
-					let fieldTypeLink = "<a href=\"#"+apiFunc.RtnDataType+"\">"+apiFunc.RtnDataType+"</a>";
-					tblData.push(["data", fieldTypeLink+innerTable.outerHTML, "返回包体数据对象"])
-				}else if(apiFunc.RtnDataType.startsWith("struct")&&((apiFunc.RtnDataType!=="struct {}"))) {
-					let structData = structString2Data(apiFunc.RtnDataType);
-					let table = structData2Table(structData);
-					let showType = apiFunc.RtnDataType.split(" ")[0];
-					let fieldTypeLink = "<a href=\"JavaScript:void();\">"+showType+"</a>";
-					tblData.push(["data", fieldTypeLink+table.outerHTML, "返回包体数据对象"])
+				tblData.push(["字段", "类型", "必填","描述"]);
+				for(let m=0; m<structInfo.Fields.length; m++) {
+					let field = structInfo.Fields[m];
+					if ((apiDoc.StructInfos.filter(a=>field.Type.includes(a.StructName)).length>0)&&
+							(!field.Type.includes("struct {"))) {
+						let fieldTypeText = fieldType2Link(field.Type);
+						tblData.push([field.Name, fieldTypeText, (field.Required)?"是":"", field.Description])
+					}else if (field.Type.startsWith("struct")||field.Type.startsWith("[]struct")) {
+						let structData = structString2Data(field.Type);
+						let table = structData2Table(structData);
+						let showType = field.Type.split(" ")[0];
+						let fieldTypeLink = "<a href=\"JavaScript:void();\">"+showType+"</a>";
+						tblData.push([field.Name, fieldTypeLink+table.outerHTML, (field.Required)?"是":"", "返回包体数据对象"])
+					}else{
+						tblData.push([field.Name, field.Type, (field.Required)?"是":"", field.Description])
+					}
 				}
-				else{
-					tblData.push(["data", apiFunc.RtnDataType, "返回包体数据对象"])
-				}
-				addTable(ul, tblData)
+				addTable(xStruct, tblData)
 			}
+
 		}
-		addChild(doc, "h3", "", "X. 附录"+goBack, "X. 附录", null);
-		let xUl = addChild(doc, "ul", "", "", "", null);
-		for(let k=0; k<apiDoc.StructInfos.length; k++) {
-			let structInfo = apiDoc.StructInfos[k];
-			let xStruct = addChild(xUl, "h4", "", "X." + (k+1) + ". " + structInfo.StructName+goBack, structInfo.StructName, null);
-			let tblData = [];
-			tblData.push(["字段", "类型", "必填","描述"]);
-			for(let m=0; m<structInfo.Fields.length; m++) {
-				let field = structInfo.Fields[m];
-				if ((apiDoc.StructInfos.filter(a=>field.Type.includes(a.StructName)).length>0)&&
-					(!field.Type.includes("struct {"))) {
-					let fieldTypeText = fieldType2Link(field.Type);
-					tblData.push([field.Name, fieldTypeText, (field.Required)?"是":"", field.Description])
-				}else if (field.Type.startsWith("struct")||field.Type.startsWith("[]struct")) {
-					let structData = structString2Data(field.Type);
-					let table = structData2Table(structData);
-					let showType = field.Type.split(" ")[0];
-					let fieldTypeLink = "<a href=\"JavaScript:void();\">"+showType+"</a>";
-					tblData.push([field.Name, fieldTypeLink+table.outerHTML, (field.Required)?"是":"", "返回包体数据对象"])
-				}else{
-					tblData.push([field.Name, field.Type, (field.Required)?"是":"", field.Description])
-				}
-			}
-			addTable(xStruct, tblData)
+		function getUrlVars() {
+			let vars = {};
+			let parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+				vars[key] = value;
+			});
+			return vars;
 		}
+		let vars = getUrlVars();
+		if (typeof vars.t === 'undefined') {
+			window.open(window.location.href + '?t=' + new Date().getTime(), '_self')
+		}
+		let script = document.createElement("script");
+		script.type = "text/javascript";
+		script.src = "_apiDoc.html.js" + '?t=' + new Date().getTime();
+		script.onload = function() {
+			fillDoc();
+		};
+		document.getElementsByTagName("head")[0].appendChild(script)
 	</script>
 </html>

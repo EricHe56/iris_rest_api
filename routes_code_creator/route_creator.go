@@ -224,11 +224,11 @@ func getModlesType() {
 				apiDoc_Categories += "\tX." + strconv.Itoa(j) + ". " + typ.Elem().String() + "\n"
 				apiDocStructAll += "\tX." + strconv.Itoa(j) + ". " + typ.Elem().String() + "\n"
 				fmt.Println(typ.Elem().String())
-				if typ.Kind() != reflect.Struct {
-					continue
-				}
 				//fmt.Printf("%v", typ.Elem().Kind())
 				s := typ.Elem()
+				if s.Kind() != reflect.Struct {
+					continue
+				}
 				//v := reflect.New(typ)
 				for i := 0; i < s.NumField(); i++ { // s must struct
 					fieldType := s.Field(i)
