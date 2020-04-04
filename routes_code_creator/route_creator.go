@@ -326,8 +326,14 @@ func getCodeComment(methodName string) (comments string) {
 	var regexpStr = `(?ism)^//##` + methodName + `:[\w=<> \pP\p{Han}\t]*$`
 	regexp1, _ := regexp.Compile(regexpStr)
 	strMatched := regexp1.FindAllString(apiCodeAll, -1)
+	var tmpStr = ""
 	for _, v := range strMatched {
-		comments += strings.ReplaceAll(v, "//##"+methodName+":", "") + "\n"
+		tmpStr = strings.ReplaceAll(v, "//##"+methodName+":", "")
+		if strings.HasPrefix(strings.TrimSpace(tmpStr), "<") && strings.HasSuffix(tmpStr, ">") {
+			comments += tmpStr
+		} else {
+			comments += tmpStr + "\n"
+		}
 	}
 	fmt.Println(comments)
 	return
