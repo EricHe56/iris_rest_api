@@ -400,7 +400,12 @@
 		}
 		let vars = getUrlVars();
 		if (typeof vars.t === 'undefined') {
-			window.open(window.location.href + '?t=' + new Date().getTime(), '_self')
+			let url = window.location.href
+			if (url.includes('?')) {
+				window.open(url + '&t=' + new Date().getTime(), '_self')
+			}else{
+				window.open(url + '?t=' + new Date().getTime(), '_self')
+			}
 		}
 		let script = document.createElement("script");
 		script.type = "text/javascript";
