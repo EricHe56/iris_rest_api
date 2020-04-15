@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -12,6 +13,29 @@ func HttpRequest(method string, url string, body string) (status int, responseBo
 	responseBody = ""
 	request, _ := http.NewRequest(method, url, strings.NewReader(body))
 	request.Header.Add("Content-Type", "application/json; charset=UTF-8")
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		fmt.Println("HttpRequest Error: ", err)
+		status = -1
+		responseBody = err.Error()
+		return
+	}
+	defer response.Body.Close()
+
+	status = response.StatusCode
+	responseBytes, _ := ioutil.ReadAll(response.Body)
+	responseBody = string(responseBytes)
+	//StdPrint.Info(method, url, body, responseBody)
+	return
+}
+
+func HttpRequestWithHeader(method string, url string, body string, headers map[string]string) (status int, responseBody string, responseHeaders http.Header) {
+	responseBody = ""
+	request, _ := http.NewRequest(method, url, strings.NewReader(body))
+	for k, v := range headers {
+		request.Header.Add(k, v)
+	}
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
@@ -23,6 +47,7 @@ func HttpRequest(method string, url string, body string) (status int, responseBo
 	defer response.Body.Close()
 
 	status = response.StatusCode
+	responseHeaders = response.Header
 	responseBytes, _ := ioutil.ReadAll(response.Body)
 	responseBody = string(responseBytes)
 	//StdPrint.Info(method, url, body, responseBody)
@@ -68,6 +93,28 @@ func GetFilesAndDirs(dirPath string) (files []string, dirs []string, err error) 
 			if ok {
 				files = append(files, dirPath+PathSep+fi.Name())
 			}
+		}
+	}
+	return
+}
+
+func SortMapByKeys(mapInput map[string]string) (queryStr string) {
+	keys := make([]string, 0, len(mapInput))
+	for k, _ := range mapInput {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	var i = 0
+	for k1 := range keys {
+		var v = mapInput[keys[k1]]
+		var k = keys[k1]
+		//mapInput[keys[k1]] = mapInput[keys[k1]]
+		if v != "" {
+			if i > 0 {
+				queryStr += "&"
+			}
+			queryStr += k + "=" + v
+			i++
 		}
 	}
 	return
