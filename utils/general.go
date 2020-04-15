@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -12,7 +13,13 @@ func HttpRequest(method string, url string, body string) (status int, responseBo
 	request, _ := http.NewRequest(method, url, strings.NewReader(body))
 	request.Header.Add("Content-Type", "application/json; charset=UTF-8")
 	client := &http.Client{}
-	response, _ := client.Do(request)
+	response, err := client.Do(request)
+	if err != nil {
+		fmt.Println("HttpRequestWithHeader Error: ", err)
+		status = -1
+		responseBody = err.Error()
+		return
+	}
 	defer response.Body.Close()
 
 	status = response.StatusCode
