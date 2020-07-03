@@ -323,7 +323,7 @@ func getAllCodeText(dirPath string) (codeText string, e error) {
 }
 
 func getCodeComment(methodName string) (comments string) {
-	var regexpStr = `(?ism)^//##` + methodName + `:[\w=<> \pP\p{Han}\t]*$`
+	var regexpStr = `(?ism)^//##` + methodName + `:[!-~ \pP\p{Han}\t]*$`
 	regexp1, _ := regexp.Compile(regexpStr)
 	strMatched := regexp1.FindAllString(apiCodeAll, -1)
 	var tmpStr = ""
