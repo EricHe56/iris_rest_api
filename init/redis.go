@@ -65,3 +65,19 @@ func RedisTTL(key string) (ttl int64, e error) {
 	ttl, e = redis.Int64(cnn.Do("TTL", key))
 	return
 }
+
+func RedisIsMember(key string, value string) (result int, e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	result, e = redis.Int(cnn.Do("SISMEMBER", key, value))
+	return
+}
+
+func RedisIncrease(key string) (newValue int64, e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	newValue, e = redis.Int64(cnn.Do("INCR", key))
+	return
+}
