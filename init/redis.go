@@ -81,3 +81,44 @@ func RedisIncrease(key string) (newValue int64, e error) {
 	newValue, e = redis.Int64(cnn.Do("INCR", key))
 	return
 }
+
+func RedisZAdd(key string, score string, name string) (added int, e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	added, e = redis.Int(cnn.Do("zadd", key, score, name))
+	return
+}
+
+func RedisZScore(key string, name string) (score string, e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	score, e = redis.String(cnn.Do("zscore", key, name))
+	return
+}
+
+func RedisZCount(key string, min string, max string) (count int, e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	count, e = redis.Int(cnn.Do("zcount", key, min, max))
+	return
+}
+
+func RedisZRange(key string, start string, stop string) (res [][]byte, e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	res, e = redis.ByteSlices(cnn.Do("zrange", key, start, stop, "WITHSCORES"))
+	return
+}
+
+func RedisZRevRange(key string, start string, stop string) (res [][]byte, e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	res, e = redis.ByteSlices(cnn.Do("zrevrange", key, start, stop, "WITHSCORES"))
+	return
+}
+
