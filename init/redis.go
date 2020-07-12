@@ -90,6 +90,14 @@ func RedisZAdd(key string, score string, name string) (added int, e error) {
 	return
 }
 
+func RedisZIncrBy(key string, incr string, name string) (newValue int, e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	newValue, e = redis.Int(cnn.Do("zincrby", key, incr, name))
+	return
+}
+
 func RedisZScore(key string, name string) (score string, e error) {
 	cnn := RedisClient.Get()
 	defer cnn.Close()
