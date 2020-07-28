@@ -130,3 +130,10 @@ func RedisZRevRange(key string, start string, stop string) (res [][]byte, e erro
 	return
 }
 
+func RedisZRevRangeIntMap(key string, start string, stop string) (res interface{}, e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	res, e = redis.IntMap(cnn.Do("zrevrange", key, start, stop, "WITHSCORES"))
+	return
+}
