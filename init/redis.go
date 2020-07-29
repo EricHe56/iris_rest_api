@@ -130,3 +130,22 @@ func RedisZRevRange(key string, start string, stop string) (res [][]byte, e erro
 	return
 }
 
+func RedisByteArrayToDataset(listBytes [][]byte, err error) (dataset []interface{}, e error) {
+	if err != nil {
+		e = err
+		return
+	}
+
+	for i := 0; i < len(listBytes); i = i + 2 {
+		value, _ := strconv.ParseInt(string(listBytes[i+1]), 10, 64)
+		var newData = struct {
+			Name  string `json:"name" q:",名称"`
+			Value int64  `json:"value" q:",值"`
+		}{
+			Name:  string(listBytes[i]),
+			Value: value,
+		}
+		dataset = append(dataset, newData)
+	}
+	return
+}
