@@ -169,3 +169,20 @@ func RedisByteArrayToDataset(listBytes [][]byte, err error) (dataset []interface
 	}
 	return
 }
+
+
+func RedisZRank(key string, name string) (rank int, e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	rank, e = redis.Int(cnn.Do("zrank", key, name))
+	return
+}
+
+func RedisZRevRank(key string, name string) (revRank int, e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	revRank, e = redis.Int(cnn.Do("zrevrank", key, name))
+	return
+}
