@@ -38,7 +38,12 @@ func RedisSetString(key string, value string, seconds int) (e error) {
 	cnn := RedisClient.Get()
 	defer cnn.Close()
 
-	_, e = cnn.Do("SET", key, value, "EX", seconds)
+	if seconds == -1 {
+		// set seconds = -1 for permanent storage
+		_, e = cnn.Do("SET", key, value)
+	} else {
+		_, e = cnn.Do("SET", key, value, "EX", seconds)
+	}
 	return
 }
 
