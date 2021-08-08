@@ -55,6 +55,27 @@ func RedisGetString(key string) (value string, e error) {
 	return
 }
 
+func RedisSetBytes(key string, value []byte, seconds int) (e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	if seconds == -1 {
+		// set seconds = -1 for permanent storage
+		_, e = cnn.Do("SET", key, value)
+	} else {
+		_, e = cnn.Do("SET", key, value, "EX", seconds)
+	}
+	return
+}
+
+func RedisGetBytes(key string) (value []byte, e error) {
+	cnn := RedisClient.Get()
+	defer cnn.Close()
+
+	value, e = redis.Bytes(cnn.Do("GET", key))
+	return
+}
+
 func RedisDelString(key string) (e error) {
 	cnn := RedisClient.Get()
 	defer cnn.Close()
