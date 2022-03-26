@@ -2,6 +2,7 @@ package init
 
 import (
 	"github.com/gomodule/redigo/redis"
+	"strconv"
 	"time"
 )
 
@@ -76,11 +77,11 @@ func RedisGetBytes(key string) (value []byte, e error) {
 	return
 }
 
-func RedisDelString(key string) (e error) {
+func RedisDelString(key string) (removed int64, e error) {
 	cnn := RedisClient.Get()
 	defer cnn.Close()
 
-	_, e = redis.String(cnn.Do("DEL", key))
+	removed, e = redis.Int64(cnn.Do("DEL", key))
 	return
 }
 
@@ -175,27 +176,6 @@ func RedisByteArrayToDataset(listBytes [][]byte, err error) (dataset []interface
 	}
 	return
 }
-
-func RedisByteArrayToDataset(listBytes [][]byte, err error) (dataset []interface{}, e error) {
-	if err != nil {
-		e = err
-		return
-	}
-
-	for i := 0; i < len(listBytes); i = i + 2 {
-		value, _ := strconv.ParseInt(string(listBytes[i+1]), 10, 64)
-		var newData = struct {
-			Name  string `json:"name" q:",名称"`
-			Value int64  `json:"value" q:",值"`
-		}{
-			Name:  string(listBytes[i]),
-			Value: value,
-		}
-		dataset = append(dataset, newData)
-	}
-	return
-}
-
 
 func RedisZRank(key string, name string) (rank int, e error) {
 	cnn := RedisClient.Get()

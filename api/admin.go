@@ -121,7 +121,7 @@ func (x AdminApi) Info(req struct {
 
 func (x AdminApi) Logout(req Admin) (code int, data string, e error) {
 	xToken := x.R.Header.Get("X-Token")
-	_ = RedisDelString(xToken)
+	_, _ = RedisDelString(xToken)
 	code = 0
 	data = "success"
 	return
