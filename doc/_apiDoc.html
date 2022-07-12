@@ -1,6 +1,7 @@
 <html lang="zh-Hans">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script type="text/javascript" src="_apiDoc.html.js"></script>
 		<link href="gfm.css" media="all" rel="stylesheet" type="text/css">
 		<style>
 			.doc-time {
@@ -120,14 +121,14 @@
 			let curPath = [];
 			let curStruct = structData;
 			curPath.push(structData);
-			if (structString.startsWith("struct")||(structString.startsWith("[]struct"))) {
+			if (structString.startsWith("struct")||structString.startsWith("*struct")||(structString.startsWith("[]struct"))) {
 				let strArray = structString.split(" ");
 				for(let i=0; i<strArray.length; i++) {
 					if (curStruct.Step === 0) {
 						curStruct.Name = strArray[i];
 						curStruct.Step++
 					}else if (curStruct.Step === 1) {
-						if ((strArray[i]==="struct")||(strArray[i]==="[]struct")) {
+						if ((strArray[i]==="struct")||(strArray[i]==="*struct")||(strArray[i]==="[]struct")) {
 							curStruct.Type = strArray[i]
 						}else if(strArray[i]==="{") {
 							// parent level step keep in 1 when start new sub
@@ -269,7 +270,7 @@
 				if (apiDoc.StructInfos.filter(a=>field.Type.includes(a.StructName)).length>0) {
 					let fieldTypeText = fieldType2Link(field.Type);
 					row = [jsonName, fieldTypeText, (field.Required)?"是":"", field.Description]
-				}else if(field.Type.startsWith("struct")||field.Type.startsWith("[]struct")) {
+				}else if(field.Type.startsWith("struct")||field.Type.startsWith("*struct")||field.Type.startsWith("[]struct")) {
 					let innerTable = structData2Table(field);
 					let fieldTypeLink = "<a href=\"JavaScript:void();\">"+field.Type+"</a>";
 					row = [jsonName, fieldTypeLink+innerTable.outerHTML, (field.Required)?"是":"", field.Description]
