@@ -56,7 +56,15 @@
 					for(let j=0; j<row.length; j++) {
 						let cellText = row[j];
 						let td = document.createElement("td");
-						td.innerHTML = cellText;
+						if (cellText.includes("struct") && cellText.includes("{")) {
+							let structData = structString2Data(cellText);
+							let table = structData2Table(structData);
+							let fieldTypeLink = "<a href=\"JavaScript:void();\">struct</a>";
+							addChild(td, "span", "", fieldTypeLink, "", null);
+							td.appendChild(table)
+						}else{
+							td.innerHTML = cellText;
+						}
 						td.align = "left";
 						tr.appendChild(td)
 					}
