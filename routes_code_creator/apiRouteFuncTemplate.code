@@ -10,10 +10,13 @@ func {{routeFunctionName}}(ctx iris.Context) {
 		R:               ctx.Request(),
 		W:               ctx.ResponseWriter(),
 		CodeDescription: GlobalCodeDescription,
+		RndData:         ctx.Values().GetFloat64Default("rnd", 0),
 	}
+	apiX.RequestBody, _ = ctx.GetBody()
 
 	var req {{reqType}}
-	body := ctx.Values().GetString("body")
+	//body := ctx.Values().GetString("body")
+	body := string(apiX.RequestBody)
     if body=="" {
         body = "{}"
     }
@@ -25,8 +28,25 @@ func {{routeFunctionName}}(ctx iris.Context) {
 		bodyR.Code, bodyR.Data, err = {{apiType}}.{{apiFunction}}{{apiFunctionInput}}
 		bodyR.Message = apiX.CodeDescription[bodyR.Code]
 		if err != nil {
-			bodyR.Data = err.Error()
-			StdPrint.Error(err.Error())
+			switch bodyR.Code {
+			case -302:
+				var fileUrl = err.Error()
+				ctx.Redirect(fileUrl, http.StatusFound) // 302
+				return
+			case -303:
+				var fileUrl = err.Error()
+				ctx.Redirect(fileUrl, http.StatusSeeOther) // 303
+				return
+			case -400:
+				ctx.ResponseWriter().WriteHeader(http.StatusBadRequest) //400
+				bodyR.Data = err.Error()
+				StdPrint.Error(err.Error())
+				_, _ = ctx.JSON(bodyR, JsonOptions)
+				return
+			default:
+				bodyR.Data = err.Error()
+				StdPrint.Error(err.Error())
+			}
 		}
 	}
 	_, _ = ctx.JSON(bodyR, JsonOptions)

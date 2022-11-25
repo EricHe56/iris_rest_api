@@ -30,7 +30,7 @@ func main() {
 			DisablePathCorrection:             false,
 			EnablePathEscape:                  false,
 			FireMethodNotAllowed:              false,
-			DisableBodyConsumptionOnUnmarshal: false,
+			DisableBodyConsumptionOnUnmarshal: true, // keep body
 			DisableAutoFireStatusCode:         false,
 			TimeFormat:                        "2006-01-02T15:04:05.000Z07:00", // "Mon, 02 Jan 2006 15:04:05.000 GMT",
 			Charset:                           "UTF-8",

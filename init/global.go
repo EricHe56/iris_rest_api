@@ -1,18 +1,21 @@
 package init
 
 import (
+	"context"
 	_ "fmt"
 	"github.com/astaxie/beego/config"
 	"github.com/gomodule/redigo/redis"
 	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
-	"gopkg.in/mgo.v2"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	_ "iris_rest_api/utils"
 	"log"
 	"math/rand"
 	_ "reflect"
 	_ "regexp"
 	_ "strings"
+	"time"
 )
 
 const TEST_DOC_NAME = "./doc/_testDoc.html"
@@ -20,7 +23,7 @@ const TEST_DOC_NAME = "./doc/_testDoc.html"
 const TEST_DOC_TITLE = "Iris Rest Api"
 
 const (
-	DB      = "test"
+	//DB      = "test"
 	C_ADMIN = "admin"
 	C_FAQ   = "faq"
 )
@@ -40,7 +43,9 @@ var App *iris.Application
 var StdPrint *golog.Logger
 var Info *log.Logger
 var RedisClient *redis.Pool
-var GlobalMgoSession *mgo.Session
+
+// var GlobalMgoSession *mgo.Session
+var GlobalMgoClient *mongo.Client
 var DevMode bool = false
 var BuildApiDoc bool = false
 var IniConfiger config.Configer
@@ -50,6 +55,8 @@ var JsonOptions = iris.JSON{
 	Indent:        "",
 	Prefix:        "",
 }
+
+var DB = "test"
 
 func Pre_Handler(ctx iris.Context) {
 	//ctx.Application().Logger().Println("Before Handler--Method: ", ctx.Method(), "Runs before %s", ctx.Path())
@@ -79,20 +86,18 @@ func Pre_Handler(ctx iris.Context) {
 	ctx.Next()
 }
 
-func CloneSession() *mgo.Session {
-	return GlobalMgoSession.Clone()
-}
+//func CloneSession() *mgo.Session {
+//	return GlobalMgoSession.Clone()
+//}
 
-func CreateIndex(collection string, key string) (err error) {
-	session := CloneSession()
-	defer session.Close()
-	index := mgo.Index{
-		Key: []string{key}, // 索引字段， 默认升序,若需降序在字段前加-
-		//Unique:     true,		// 唯一索引 同mysql唯一索引
-		//DropDups:   true,		// 索引重复替换旧文档,Unique为true时失效
-		//Background: true,		// 后台创建索引
-		//Sparse:     true,		// Only index documents containing the Key fields
+func CreateIndex(collection string, key string) (idxName string, err error) {
+	ctxMongo, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	idxModel := mongo.IndexModel{
+		Keys: bson.D{
+			{key, 1},
+		},
 	}
-	err = session.DB(DB).C(collection).EnsureIndex(index)
+	idxName, err = GlobalMgoClient.Database(DB).Collection(collection).Indexes().CreateOne(ctxMongo, idxModel)
 	return
 }

@@ -1,3 +1,4 @@
+//go:build create_router
 // +build create_router
 
 package routes_code_creator
@@ -59,12 +60,13 @@ var apiRoutesHeader = `
 
 package main
 import (
-	"encoding/json"
-	"github.com/kataras/iris/v12"
-	"gopkg.in/mgo.v2/bson"
 	"iris_rest_api/api"
 	. "iris_rest_api/init"
 	"iris_rest_api/models"
+	"encoding/json"
+	"github.com/kataras/iris/v12"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"net/http"
 )
 
 func loadRouteHandlers() {

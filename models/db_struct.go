@@ -1,17 +1,17 @@
 package models
 
-import "gopkg.in/mgo.v2/bson"
+import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type D_User struct {
-	ID    bson.ObjectId `json:"id"  bson:"_id" q:",编号"`
-	Name  string        `json:"name" bson:"name" q:",名称"`
-	Age   int           `json:"age" bson:"age" q:",年龄"`
-	Ctime int64         `json:"ctime" bson:"_ctime" q:",创建时间"`
-	Mtime int64         `json:"mtime" bson:"_mtime" q:",修改时间"`
+	ID    primitive.ObjectID `json:"id"  bson:"_id" q:",编号"`
+	Name  string             `json:"name" bson:"name" q:",名称"`
+	Age   int                `json:"age" bson:"age" q:",年龄"`
+	Ctime int64              `json:"ctime" bson:"_ctime" q:",创建时间"`
+	Mtime int64              `json:"mtime" bson:"_mtime" q:",修改时间"`
 }
 
 type Faq struct {
-	ID             bson.ObjectId      `json:"id"  bson:"_id" q:",编号"`
+	ID             primitive.ObjectID `json:"id"  bson:"_id" q:",编号"`
 	Question       string             `json:"question" bson:"question" q:",问题"`
 	Answer         string             `json:"answer" bson:"answer" q:",答案"`
 	Status         int                `json:"status" bson:"status" q:",状态 1=上线 10=下线"`

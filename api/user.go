@@ -1,6 +1,7 @@
 package api
 
 import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"iris_rest_api/models"
 	"net/http"
 )
@@ -9,6 +10,8 @@ type UserApi struct {
 	CodeDescription map[int]string
 	W               http.ResponseWriter
 	R               *http.Request
+	RequestBody     []byte
+	RndData         float64
 }
 
 func (x UserApi) Get(req struct {
@@ -61,7 +64,7 @@ func (x UserApi) ReqDocBuildTest(req struct {
 	Total int `json:"total"  q:",记录总数"`
 }) (code int, data models.D_User, e error) {
 	data = models.D_User{
-		ID:    "",
+		ID:    primitive.NewObjectID(),
 		Name:  "",
 		Age:   0,
 		Ctime: 0,

@@ -1,14 +1,18 @@
+//go:build !create_router
 // +build !create_router
 
 package init
 
 import (
+	"context"
 	"github.com/astaxie/beego/config"
 	"github.com/betacraft/yaag/yaag"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
-	"gopkg.in/mgo.v2"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"iris_rest_api/irisyaag"
 	"log"
@@ -94,24 +98,45 @@ func NewApp() *iris.Application {
 	RedisClient = RedisCnnPool(redisHost, redisPort, redisPwd)
 
 	// mongodb 连接池
-	var mongoHost = IniConfiger.String("mongodb::host")
-	var mongoPort = IniConfiger.String("mongodb::port")
-	var mongoUser = IniConfiger.String("mongodb::username")
-	var mongoPwd = IniConfiger.String("mongodb::password")
-	dialInfo := &mgo.DialInfo{
-		Addrs:    []string{mongoHost + ":" + mongoPort},
-		Username: mongoUser,
-		Password: mongoPwd,
-	}
+	//var mongoHost = IniConfiger.String("mongodb::host")
+	//var mongoPort = IniConfiger.String("mongodb::port")
+	//var mongoUser = IniConfiger.String("mongodb::username")
+	//var mongoPwd = IniConfiger.String("mongodb::password")
+	var mongoUri = IniConfiger.String("mongodb::uri")
+	DB = IniConfiger.String("mongodb::database")
+	//dialInfo := &mgo.DialInfo{
+	//	Addrs:    []string{mongoHost + ":" + mongoPort},
+	//	Username: mongoUser,
+	//	Password: mongoPwd,
+	//}
+	//
+	//globalMgoSession, err := mgo.DialWithInfo(dialInfo)
+	//if err != nil {
+	//	StdPrint.Error("mongo connect error: ", err)
+	//	Info.Println(err)
+	//}
+	//GlobalMgoSession = globalMgoSession
+	//GlobalMgoSession.SetMode(mgo.Monotonic, true)
+	//GlobalMgoSession.SetPoolLimit(300)
+	//StdPrint.Info("mongo connected")
 
-	globalMgoSession, err := mgo.DialWithInfo(dialInfo)
+	// official driver
+	ctxMongo, cancel := context.WithTimeout(context.Background(), 180*time.Second)
+	defer cancel()
+	var optionsMongo = options.Client().ApplyURI(mongoUri)
+	cltMongo, err := mongo.NewClient(optionsMongo)
 	if err != nil {
-		StdPrint.Error("mongo connect error: ", err)
-		Info.Println(err)
+		StdPrint.Info("mongo NewClient Error: ", err)
 	}
-	GlobalMgoSession = globalMgoSession
-	GlobalMgoSession.SetMode(mgo.Monotonic, true)
-	GlobalMgoSession.SetPoolLimit(300)
+	err = cltMongo.Connect(ctxMongo)
+	if err != nil {
+		StdPrint.Info("mongo Connect Error: ", err)
+	}
+	err = cltMongo.Ping(ctxMongo, readpref.Primary())
+	if err != nil {
+		StdPrint.Info("mongo Ping Error: ", err)
+	}
+	GlobalMgoClient = cltMongo
 	StdPrint.Info("mongo connected")
 
 	// 	CORS 跨域
