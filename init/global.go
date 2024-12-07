@@ -50,10 +50,10 @@ var DevMode bool = false
 var BuildApiDoc bool = false
 var IniConfiger config.Configer
 var JsonOptions = iris.JSON{
-	StreamingJSON: false,
-	UnescapeHTML:  false,
-	Indent:        "",
-	Prefix:        "",
+	//StreamingJSON: false,
+	UnescapeHTML: false,
+	Indent:       "",
+	Prefix:       "",
 }
 
 var DB = "test"
@@ -64,7 +64,7 @@ func Pre_Handler(ctx iris.Context) {
 	if path != "/admin/login" {
 		xToken := ctx.GetHeader("X-Token")
 		if !RedisIsExist(xToken) {
-			_, _ = ctx.JSON(ResponseBody{
+			_ = ctx.JSON(ResponseBody{
 				Code:    50008, //50008: Illegal token, re-login
 				Message: "X-Token Error",
 				Data:    "",

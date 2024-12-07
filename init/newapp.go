@@ -6,7 +6,6 @@ package init
 import (
 	"context"
 	"github.com/astaxie/beego/config"
-	"github.com/betacraft/yaag/yaag"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
@@ -14,7 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"gopkg.in/natefinch/lumberjack.v2"
-	"iris_rest_api/irisyaag"
 	"log"
 	"os"
 	"time"
@@ -66,13 +64,7 @@ func NewApp() *iris.Application {
 	}
 
 	if DevMode && BuildApiDoc { // 仅在dev模式生成文档
-		yaag.Init(&yaag.Config{ // <- IMPORTANT, init the middleware.
-			On:       true,
-			DocTitle: TEST_DOC_TITLE,
-			DocPath:  TEST_DOC_NAME,
-			BaseUrls: map[string]string{"Production": TEST_DOC_TITLE, "Staging": time.Now().Format("2006-01-02T15:04:05.000Z07:00"), "Your Info": "Here"},
-		})
-		App.Use(irisyaag.New())
+
 	}
 
 	IniConfiger, _ = config.NewConfig("ini", iniFile)
@@ -157,7 +149,7 @@ func NewApp() *iris.Application {
 	App.Use(Pre_Handler)
 
 	App.Handle("ANY", "/ping", func(ctx iris.Context) {
-		_, _ = ctx.JSON(iris.Map{"message": "pong"})
+		_ = ctx.JSON(iris.Map{"message": "pong"})
 		//bytes, _ := ctx.GetBody()
 		body := ctx.Values().GetString("body")
 		rnd, _ := ctx.Values().GetFloat64("rnd")

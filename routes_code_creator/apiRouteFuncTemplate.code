@@ -41,7 +41,7 @@ func {{routeFunctionName}}(ctx iris.Context) {
 				ctx.ResponseWriter().WriteHeader(http.StatusBadRequest) //400
 				bodyR.Data = err.Error()
 				StdPrint.Error(err.Error())
-				_, _ = ctx.JSON(bodyR, JsonOptions)
+				_ = ctx.JSON(bodyR, JsonOptions)
 				return
 			default:
 				bodyR.Data = err.Error()
@@ -49,6 +49,6 @@ func {{routeFunctionName}}(ctx iris.Context) {
 			}
 		}
 	}
-	_, _ = ctx.JSON(bodyR, JsonOptions)
+	_ = ctx.JSON(bodyR, JsonOptions)
 	return
 }
